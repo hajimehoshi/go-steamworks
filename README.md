@@ -42,11 +42,11 @@ All the source code files are licensed under Apache License 2.0.
 
 These binary files are copied from Steamworks SDK's `redistribution_bin` directory. You must follow [Valve Corporation Steamworks SDK Access Agreement](https://partner.steamgames.com/documentation/sdk_access_agreement) for these files:
 
- * `libsteam_api.dylib`
- * `libsteam_api.so`
- * `libsteam_api64.so`
- * `steam_api.dll`
- * `steam_api64.dll`
+ * `libsteam_api.dylib` (copied from `osx/libsteam_api.dylib`)
+ * `libsteam_api.so` (copied from `linux32/libsteam_api.so`)
+ * `libsteam_api64.so` (copied from `linux64/libsteam_api.so`)
+ * `steam_api.dll` (copied from `steam_api.dll`)
+ * `steam_api64.dll` (copied from `win64/steam_api64.dll`)
 
 ## Resources
 
