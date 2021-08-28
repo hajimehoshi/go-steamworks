@@ -28,14 +28,14 @@ func run() error {
 	}
 	defer os.RemoveAll(dir)
 
-	if err := downloadSDKZip(dir); err != nil {
+	if err := processZip(dir); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func downloadSDKZip(dir string) error {
+func processZip(dir string) error {
 	f, err := os.Open(fmt.Sprintf("steamworks_sdk_%s.zip", version))
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -55,26 +55,20 @@ func downloadSDKZip(dir string) error {
 		return err
 	}
 
-	libs := map[string]string {
+	for path, filename := range map[string]string {
 		"sdk/redistributable_bin/linux32/libsteam_api.so": "libsteam_api.so",
 		"sdk/redistributable_bin/linux64/libsteam_api.so": "libsteam_api64.so",
 		"sdk/redistributable_bin/osx/libsteam_api.dylib":  "libsteam_api.dylib",
 		"sdk/redistributable_bin/steam_api.dll":           "steam_api.dll",
 		"sdk/redistributable_bin/win64/steam_api64.dll":   "steam_api64.dll",
-	}
-	for _, f := range r.File {
-		name, ok := libs[f.Name]
-		if !ok {
-			continue
-		}
-
-		r, err := f.Open()
+	} {
+		r, err := r.Open(path)
 		if err != nil {
 			return err
 		}
 		defer r.Close()
 
-		out, err := os.Create(name)
+		out, err := os.Create(filename)
 		if err != nil {
 			return err
 		}
