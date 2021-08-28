@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2021 The go-steamworks Authors
 
+//go:generate go run gen.go
+
 package steamworks
 
 type ISteamApps interface {
