@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2021 The go-steamworks Authors
 
-//go:build !js && !windows
-// +build !js,!windows
+//go:build !windows
+// +build !windows
 
 package steamworks
 
