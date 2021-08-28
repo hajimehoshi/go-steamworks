@@ -51,7 +51,7 @@ func loadDLL() (*dll, error) {
 		return nil, err
 	}
 
-	dir := filepath.Join(cachedir, "go-inovation")
+	dir := filepath.Join(cachedir, "go-steamworks")
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return nil, err
 	}
