@@ -55,7 +55,7 @@ func processZip(dir string) error {
 		return err
 	}
 
-	for path, filename := range map[string]string {
+	for path, filename := range map[string]string{
 		"sdk/redistributable_bin/linux32/libsteam_api.so": "libsteam_api.so",
 		"sdk/redistributable_bin/linux64/libsteam_api.so": "libsteam_api64.so",
 		"sdk/redistributable_bin/osx/libsteam_api.dylib":  "libsteam_api.dylib",
