@@ -1,5 +1,7 @@
 # go-steamworks
 
+** This project is still work in progress! **
+
 A Steamworks SDK binding for Go
 
 ## How to use
