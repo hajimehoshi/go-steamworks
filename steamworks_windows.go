@@ -16,6 +16,7 @@ import (
 var steamAPIDLLHash string
 
 func init() {
+	// TOOD: Calculate the hash at gen.go and use it.
 	hash := sha256.Sum256(steamAPIDLL)
 	steamAPIDLLHash = hex.EncodeToString(hash[:])
 }
