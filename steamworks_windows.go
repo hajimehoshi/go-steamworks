@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"os"
 	"path/filepath"
+	"runtime"
 	"unsafe"
 
 	"golang.org/x/sys/windows"
@@ -127,4 +128,110 @@ func (s steamApps) GetCurrentGameLanguage() string {
 		bs = append(bs, b)
 	}
 	return string(bs)
+}
+
+func SteamRemoteStorage() ISteamRemoteStorage {
+	v, err := theDLL.call(flatAPI_SteamRemoteStorage)
+	if err != nil {
+		panic(err)
+	}
+	return steamRemoteStorage(v)
+}
+
+type steamRemoteStorage uintptr
+
+func (s steamRemoteStorage) FileWrite(file string, data []byte) bool {
+	cfile := append([]byte(file), 0)
+	defer runtime.KeepAlive(cfile)
+
+	defer runtime.KeepAlive(data)
+
+	v, err := theDLL.call(flatAPI_ISteamRemoteStorage_FileWrite, uintptr(s), uintptr(unsafe.Pointer(&cfile[0])), uintptr(unsafe.Pointer(&data[0])), uintptr(len(data)))
+	if err != nil {
+		panic(err)
+	}
+
+	return byte(v) != 0
+}
+
+func (s steamRemoteStorage) FileRead(file string, data []byte) int32 {
+	cfile := append([]byte(file), 0)
+	defer runtime.KeepAlive(cfile)
+
+	defer runtime.KeepAlive(data)
+
+	v, err := theDLL.call(flatAPI_ISteamRemoteStorage_FileRead, uintptr(s), uintptr(unsafe.Pointer(&cfile[0])), uintptr(unsafe.Pointer(&data[0])), uintptr(len(data)))
+	if err != nil {
+		panic(err)
+	}
+
+	return int32(v)
+}
+
+func (s steamRemoteStorage) FileDelete(file string) bool {
+	cfile := append([]byte(file), 0)
+	defer runtime.KeepAlive(cfile)
+
+	v, err := theDLL.call(flatAPI_ISteamRemoteStorage_FileDelete, uintptr(s), uintptr(unsafe.Pointer(&cfile[0])))
+	if err != nil {
+		panic(err)
+	}
+
+	return byte(v) != 0
+}
+
+func SteamUserStats() ISteamUserStats {
+	v, err := theDLL.call(flatAPI_SteamUserStats)
+	if err != nil {
+		panic(err)
+	}
+	return steamUserStats(v)
+}
+
+type steamUserStats uintptr
+
+func (s steamUserStats) GetAchievement(name string) (achieved, success bool) {
+	cname := append([]byte(name), 0)
+	defer runtime.KeepAlive(cname)
+
+	v, err := theDLL.call(flatAPI_ISteamUserStats_SetAchievement, uintptr(s), uintptr(unsafe.Pointer(&cname[0])), uintptr(unsafe.Pointer(&achieved)))
+	if err != nil {
+		panic(err)
+	}
+
+	success = byte(v) != 0
+	return
+}
+
+func (s steamUserStats) SetAchievement(name string) bool {
+	cname := append([]byte(name), 0)
+	defer runtime.KeepAlive(cname)
+
+	v, err := theDLL.call(flatAPI_ISteamUserStats_SetAchievement, uintptr(s), uintptr(unsafe.Pointer(&cname[0])))
+	if err != nil {
+		panic(err)
+	}
+
+	return byte(v) != 0
+}
+
+func (s steamUserStats) ClearAchievement(name string) bool {
+	cname := append([]byte(name), 0)
+	defer runtime.KeepAlive(cname)
+
+	v, err := theDLL.call(flatAPI_ISteamUserStats_ClearAchievement, uintptr(s), uintptr(unsafe.Pointer(&cname[0])))
+	if err != nil {
+		panic(err)
+	}
+
+	return byte(v) != 0
+}
+
+func (s steamUserStats) StoreStats() bool {
+	v, err := theDLL.call(flatAPI_ISteamUserStats_StoreStats, uintptr(s))
+	if err != nil {
+		panic(err)
+	}
+
+	return byte(v) != 0
 }
