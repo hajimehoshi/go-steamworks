@@ -4,8 +4,6 @@
 package steamworks
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -13,14 +11,6 @@ import (
 
 	"golang.org/x/sys/windows"
 )
-
-var steamAPIDLLHash string
-
-func init() {
-	// TOOD: Calculate the hash at gen.go and use it.
-	hash := sha256.Sum256(steamAPIDLL)
-	steamAPIDLLHash = hex.EncodeToString(hash[:])
-}
 
 type dll struct {
 	d     *windows.LazyDLL
