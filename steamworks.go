@@ -13,6 +13,7 @@ type ISteamRemoteStorage interface {
 	FileWrite(file string, data []byte) bool
 	FileRead(file string, data []byte) int32
 	FileDelete(file string) bool
+	GetFileSize(file string) int32
 }
 
 type ISteamUserStats interface {
@@ -29,10 +30,11 @@ const (
 	flatAPI_SteamApps                         = "SteamAPI_SteamApps_v008"
 	flatAPI_ISteamApps_GetCurrentGameLanguage = "SteamAPI_ISteamApps_GetCurrentGameLanguage"
 
-	flatAPI_SteamRemoteStorage             = "SteamAPI_SteamRemoteStorage_v014"
-	flatAPI_ISteamRemoteStorage_FileWrite  = "SteamAPI_ISteamRemoteStorage_FileWrite"
-	flatAPI_ISteamRemoteStorage_FileRead   = "SteamAPI_ISteamRemoteStorage_FileRead"
-	flatAPI_ISteamRemoteStorage_FileDelete = "SteamAPI_ISteamRemoteStorage_FileDelete"
+	flatAPI_SteamRemoteStorage              = "SteamAPI_SteamRemoteStorage_v014"
+	flatAPI_ISteamRemoteStorage_FileWrite   = "SteamAPI_ISteamRemoteStorage_FileWrite"
+	flatAPI_ISteamRemoteStorage_FileRead    = "SteamAPI_ISteamRemoteStorage_FileRead"
+	flatAPI_ISteamRemoteStorage_FileDelete  = "SteamAPI_ISteamRemoteStorage_FileDelete"
+	flatAPI_ISteamRemoteStorage_GetFileSize = "SteamAPI_ISteamRemoteStorage_GetFileSize"
 
 	flatAPI_SteamUserStats                   = "SteamAPI_SteamUserStats_v012"
 	flatAPI_ISteamUserStats_GetAchievement   = "SteamAPI_ISteamUserStats_GetAchievement"

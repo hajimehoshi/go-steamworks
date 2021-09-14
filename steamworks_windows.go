@@ -170,6 +170,18 @@ func (s steamRemoteStorage) FileDelete(file string) bool {
 	return byte(v) != 0
 }
 
+func (s steamRemoteStorage) GetFileSize(file string) int32 {
+	cfile := append([]byte(file), 0)
+	defer runtime.KeepAlive(cfile)
+
+	v, err := theDLL.call(flatAPI_ISteamRemoteStorage_GetFileSize, uintptr(s), uintptr(unsafe.Pointer(&cfile[0])))
+	if err != nil {
+		panic(err)
+	}
+
+	return int32(v)
+}
+
 func SteamUserStats() ISteamUserStats {
 	v, err := theDLL.call(flatAPI_SteamUserStats)
 	if err != nil {

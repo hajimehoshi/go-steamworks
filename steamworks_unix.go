@@ -54,6 +54,10 @@ import (
 //   return ((bool (*)(uint32_t))(f))(arg0);
 // }
 //
+// static uintptr_t callFunc_Int32_Ptr(uintptr_t f, uintptr_t arg0) {
+//   return ((int32_t (*)(void*))(f))((void*)arg0);
+// }
+//
 // static uintptr_t callFunc_Int32_Ptr_Ptr_Ptr_Int32(uintptr_t f, uintptr_t arg0, uintptr_t arg1, uintptr_t arg2, int32_t arg3) {
 //   return ((int32_t (*)(void*, void*, void*, int32_t))(f))((void*)arg0, (void*)arg1, (void*)arg2, arg3);
 // }
@@ -81,6 +85,7 @@ const (
 	funcType_Bool_Ptr_Ptr_Ptr
 	funcType_Bool_Ptr_Ptr_Ptr_Int32
 	funcType_Bool_Uint32
+	funcType_Int32_Ptr
 	funcType_Int32_Ptr_Ptr_Ptr_Int32
 	funcType_Ptr
 	funcType_Ptr_Ptr
@@ -111,6 +116,8 @@ func (l *lib) call(ftype funcType, name string, args ...uintptr) (C.uintptr_t, e
 		return C.callFunc_Bool_Ptr_Ptr_Ptr_Int32(f, C.uintptr_t(args[0]), C.uintptr_t(args[1]), C.uintptr_t(args[2]), C.int32_t(args[3])), nil
 	case funcType_Bool_Uint32:
 		return C.callFunc_Bool_Uint32(f, C.uint32_t(args[0])), nil
+	case funcType_Int32_Ptr:
+		return C.callFunc_Int32_Ptr(f, C.uintptr_t(args[0])), nil
 	case funcType_Int32_Ptr_Ptr_Ptr_Int32:
 		return C.callFunc_Int32_Ptr_Ptr_Ptr_Int32(f, C.uintptr_t(args[0]), C.uintptr_t(args[1]), C.uintptr_t(args[2]), C.int32_t(args[3])), nil
 	case funcType_Ptr:
@@ -246,6 +253,17 @@ func (s steamRemoteStorage) FileDelete(file string) bool {
 		panic(err)
 	}
 	return byte(v) != 0
+}
+
+func (s steamRemoteStorage) GetFileSize(file string) int32 {
+	cfile := C.CString(file)
+	defer C.free(unsafe.Pointer(cfile))
+
+	v, err := theLib.call(funcType_Int32_Ptr, flatAPI_ISteamRemoteStorage_GetFileSize, uintptr(s), uintptr(unsafe.Pointer(cfile)))
+	if err != nil {
+		panic(err)
+	}
+	return int32(v)
 }
 
 func SteamUserStats() ISteamUserStats {
