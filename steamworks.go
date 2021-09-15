@@ -6,6 +6,7 @@
 package steamworks
 
 type ISteamApps interface {
+	GetAppInstallDir(appID AppId_t) string
 	GetCurrentGameLanguage() string
 }
 
@@ -28,6 +29,7 @@ const (
 	flatAPI_Init                  = "SteamAPI_Init"
 
 	flatAPI_SteamApps                         = "SteamAPI_SteamApps_v008"
+	flatAPI_ISteamApps_GetAppInstallDir       = "SteamAPI_ISteamApps_GetAppInstallDir"
 	flatAPI_ISteamApps_GetCurrentGameLanguage = "SteamAPI_ISteamApps_GetCurrentGameLanguage"
 
 	flatAPI_SteamRemoteStorage              = "SteamAPI_SteamRemoteStorage_v014"

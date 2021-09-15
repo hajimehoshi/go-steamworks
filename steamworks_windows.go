@@ -76,7 +76,7 @@ func init() {
 	theDLL = dll
 }
 
-func RestartAppIfNecessary(appID int) bool {
+func RestartAppIfNecessary(appID uint32) bool {
 	v, err := theDLL.call(flatAPI_RestartAppIfNecessary, uintptr(appID))
 	if err != nil {
 		panic(err)
@@ -101,6 +101,15 @@ func SteamApps() ISteamApps {
 }
 
 type steamApps uintptr
+
+func (s steamApps) GetAppInstallDir(appID AppId_t) string {
+	var path [4096]byte
+	v, err := theDLL.call(flatAPI_ISteamApps_GetAppInstallDir, uintptr(s), uintptr(appID), uintptr(unsafe.Pointer(&path[0])), uintptr(len(path)))
+	if err != nil {
+		panic(err)
+	}
+	return string(path[:uint32(v)])
+}
 
 func (s steamApps) GetCurrentGameLanguage() string {
 	v, err := theDLL.call(flatAPI_ISteamApps_GetCurrentGameLanguage, uintptr(s))
