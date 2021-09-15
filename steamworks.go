@@ -17,6 +17,10 @@ type ISteamRemoteStorage interface {
 	GetFileSize(file string) int32
 }
 
+type ISteamUser interface {
+	GetSteamID() CSteamID
+}
+
 type ISteamUserStats interface {
 	GetAchievement(name string) (achieved, success bool)
 	SetAchievement(name string) bool
@@ -37,6 +41,9 @@ const (
 	flatAPI_ISteamRemoteStorage_FileRead    = "SteamAPI_ISteamRemoteStorage_FileRead"
 	flatAPI_ISteamRemoteStorage_FileDelete  = "SteamAPI_ISteamRemoteStorage_FileDelete"
 	flatAPI_ISteamRemoteStorage_GetFileSize = "SteamAPI_ISteamRemoteStorage_GetFileSize"
+
+	flatAPI_SteamUser             = "SteamAPI_SteamUser_v021"
+	flatAPI_ISteamUser_GetSteamID = "SteamAPI_ISteamUser_GetSteamID"
 
 	flatAPI_SteamUserStats                   = "SteamAPI_SteamUserStats_v012"
 	flatAPI_ISteamUserStats_GetAchievement   = "SteamAPI_ISteamUserStats_GetAchievement"

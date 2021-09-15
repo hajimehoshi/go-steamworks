@@ -191,6 +191,28 @@ func (s steamRemoteStorage) GetFileSize(file string) int32 {
 	return int32(v)
 }
 
+func SteamUser() ISteamUser {
+	v, err := theDLL.call(flatAPI_SteamUser)
+	if err != nil {
+		panic(err)
+	}
+	return steamUser(v)
+}
+
+type steamUser uintptr
+
+func (s steamUser) GetSteamID() CSteamID {
+	if runtime.GOARCH == "386" || runtime.GOARCH == "arm" {
+		// On 32bit machines, syscall cannot treat a returned value as 64bit.
+		panic("GetSteamID is not implemented on 32bit Windows")
+	}
+	v, err := theDLL.call(flatAPI_ISteamUser_GetSteamID, uintptr(s))
+	if err != nil {
+		panic(err)
+	}
+	return CSteamID(v)
+}
+
 func SteamUserStats() ISteamUserStats {
 	v, err := theDLL.call(flatAPI_SteamUserStats)
 	if err != nil {

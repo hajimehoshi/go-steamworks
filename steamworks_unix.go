@@ -30,40 +30,44 @@ import (
 //   return (const char*)str;
 // }
 //
-// static uintptr_t callFunc_Bool(uintptr_t f) {
+// static uint8_t callFunc_Bool(uintptr_t f) {
 //   return ((bool (*)())(f))();
 // }
 //
-// static uintptr_t callFunc_Bool_Ptr(uintptr_t f, uintptr_t arg0) {
+// static uint8_t callFunc_Bool_Ptr(uintptr_t f, uintptr_t arg0) {
 //   return ((bool (*)(void*))(f))((void*)arg0);
 // }
 //
-// static uintptr_t callFunc_Bool_Ptr_Ptr(uintptr_t f, uintptr_t arg0, uintptr_t arg1) {
+// static uint8_t callFunc_Bool_Ptr_Ptr(uintptr_t f, uintptr_t arg0, uintptr_t arg1) {
 //   return ((bool (*)(void*, void*))(f))((void*)arg0, (void*)arg1);
 // }
 //
-// static uintptr_t callFunc_Bool_Ptr_Ptr_Ptr(uintptr_t f, uintptr_t arg0, uintptr_t arg1, uintptr_t arg2) {
+// static uint8_t callFunc_Bool_Ptr_Ptr_Ptr(uintptr_t f, uintptr_t arg0, uintptr_t arg1, uintptr_t arg2) {
 //   return ((bool (*)(void*, void*, void*))(f))((void*)arg0, (void*)arg1, (void*)arg2);
 // }
 //
-// static uintptr_t callFunc_Bool_Ptr_Ptr_Ptr_Int32(uintptr_t f, uintptr_t arg0, uintptr_t arg1, uintptr_t arg2, int32_t arg3) {
+// static uint8_t callFunc_Bool_Ptr_Ptr_Ptr_Int32(uintptr_t f, uintptr_t arg0, uintptr_t arg1, uintptr_t arg2, int32_t arg3) {
 //   return ((bool (*)(void*, void*, void*, int32_t))(f))((void*)arg0, (void*)arg1, (void*)arg2, arg3);
 // }
 //
-// static uintptr_t callFunc_Bool_Uint32(uintptr_t f, uint32_t arg0) {
+// static uint8_t callFunc_Bool_Int32(uintptr_t f, uint32_t arg0) {
 //   return ((bool (*)(uint32_t))(f))(arg0);
 // }
 //
-// static uintptr_t callFunc_Int32_Ptr(uintptr_t f, uintptr_t arg0) {
+// static int32_t callFunc_Int32_Ptr(uintptr_t f, uintptr_t arg0) {
 //   return ((int32_t (*)(void*))(f))((void*)arg0);
 // }
 //
-// static uintptr_t callFunc_Int32_Ptr_Int32_Ptr_Int32(uintptr_t f, uintptr_t arg0, int32_t arg1, uintptr_t arg2, int32_t arg3) {
+// static int32_t callFunc_Int32_Ptr_Int32_Ptr_Int32(uintptr_t f, uintptr_t arg0, int32_t arg1, uintptr_t arg2, int32_t arg3) {
 //   return ((int32_t (*)(void*, int32_t, void*, int32_t))(f))((void*)arg0, arg1, (void*)arg2, arg3);
 // }
 //
-// static uintptr_t callFunc_Int32_Ptr_Ptr_Ptr_Int32(uintptr_t f, uintptr_t arg0, uintptr_t arg1, uintptr_t arg2, int32_t arg3) {
+// static int32_t callFunc_Int32_Ptr_Ptr_Ptr_Int32(uintptr_t f, uintptr_t arg0, uintptr_t arg1, uintptr_t arg2, int32_t arg3) {
 //   return ((int32_t (*)(void*, void*, void*, int32_t))(f))((void*)arg0, (void*)arg1, (void*)arg2, arg3);
+// }
+//
+// static int64_t callFunc_Int64_Ptr(uintptr_t f, uintptr_t arg0) {
+//   return ((int64_t (*)(void*))(f))((void*)arg0);
 // }
 //
 // static uintptr_t callFunc_Ptr(uintptr_t f) {
@@ -88,15 +92,16 @@ const (
 	funcType_Bool_Ptr_Ptr
 	funcType_Bool_Ptr_Ptr_Ptr
 	funcType_Bool_Ptr_Ptr_Ptr_Int32
-	funcType_Bool_Uint32
+	funcType_Bool_Int32
 	funcType_Int32_Ptr
 	funcType_Int32_Ptr_Int32_Ptr_Int32
 	funcType_Int32_Ptr_Ptr_Ptr_Int32
+	funcType_Int64_Ptr
 	funcType_Ptr
 	funcType_Ptr_Ptr
 )
 
-func (l *lib) call(ftype funcType, name string, args ...uintptr) (C.uintptr_t, error) {
+func (l *lib) call(ftype funcType, name string, args ...uintptr) (C.uint64_t, error) {
 	if l.procs == nil {
 		l.procs = map[string]C.uintptr_t{}
 	}
@@ -110,27 +115,29 @@ func (l *lib) call(ftype funcType, name string, args ...uintptr) (C.uintptr_t, e
 	f := l.procs[name]
 	switch ftype {
 	case funcType_Bool:
-		return C.callFunc_Bool(f), nil
+		return C.uint64_t(C.callFunc_Bool(f)), nil
 	case funcType_Bool_Ptr:
-		return C.callFunc_Bool_Ptr(f, C.uintptr_t(args[0])), nil
+		return C.uint64_t(C.callFunc_Bool_Ptr(f, C.uintptr_t(args[0]))), nil
 	case funcType_Bool_Ptr_Ptr:
-		return C.callFunc_Bool_Ptr_Ptr(f, C.uintptr_t(args[0]), C.uintptr_t(args[1])), nil
+		return C.uint64_t(C.callFunc_Bool_Ptr_Ptr(f, C.uintptr_t(args[0]), C.uintptr_t(args[1]))), nil
 	case funcType_Bool_Ptr_Ptr_Ptr:
-		return C.callFunc_Bool_Ptr_Ptr_Ptr(f, C.uintptr_t(args[0]), C.uintptr_t(args[1]), C.uintptr_t(args[2])), nil
+		return C.uint64_t(C.callFunc_Bool_Ptr_Ptr_Ptr(f, C.uintptr_t(args[0]), C.uintptr_t(args[1]), C.uintptr_t(args[2]))), nil
 	case funcType_Bool_Ptr_Ptr_Ptr_Int32:
-		return C.callFunc_Bool_Ptr_Ptr_Ptr_Int32(f, C.uintptr_t(args[0]), C.uintptr_t(args[1]), C.uintptr_t(args[2]), C.int32_t(args[3])), nil
-	case funcType_Bool_Uint32:
-		return C.callFunc_Bool_Uint32(f, C.uint32_t(args[0])), nil
+		return C.uint64_t(C.callFunc_Bool_Ptr_Ptr_Ptr_Int32(f, C.uintptr_t(args[0]), C.uintptr_t(args[1]), C.uintptr_t(args[2]), C.int32_t(args[3]))), nil
+	case funcType_Bool_Int32:
+		return C.uint64_t(C.callFunc_Bool_Int32(f, C.uint32_t(args[0]))), nil
 	case funcType_Int32_Ptr:
-		return C.callFunc_Int32_Ptr(f, C.uintptr_t(args[0])), nil
+		return C.uint64_t(C.callFunc_Int32_Ptr(f, C.uintptr_t(args[0]))), nil
 	case funcType_Int32_Ptr_Int32_Ptr_Int32:
-		return C.callFunc_Int32_Ptr_Int32_Ptr_Int32(f, C.uintptr_t(args[0]), C.int32_t(args[1]), C.uintptr_t(args[2]), C.int32_t(args[3])), nil
+		return C.uint64_t(C.callFunc_Int32_Ptr_Int32_Ptr_Int32(f, C.uintptr_t(args[0]), C.int32_t(args[1]), C.uintptr_t(args[2]), C.int32_t(args[3]))), nil
 	case funcType_Int32_Ptr_Ptr_Ptr_Int32:
-		return C.callFunc_Int32_Ptr_Ptr_Ptr_Int32(f, C.uintptr_t(args[0]), C.uintptr_t(args[1]), C.uintptr_t(args[2]), C.int32_t(args[3])), nil
+		return C.uint64_t(C.callFunc_Int32_Ptr_Ptr_Ptr_Int32(f, C.uintptr_t(args[0]), C.uintptr_t(args[1]), C.uintptr_t(args[2]), C.int32_t(args[3]))), nil
+	case funcType_Int64_Ptr:
+		return C.uint64_t(C.callFunc_Int64_Ptr(f, C.uintptr_t(args[0]))), nil
 	case funcType_Ptr:
-		return C.callFunc_Ptr(f), nil
+		return C.uint64_t(C.callFunc_Ptr(f)), nil
 	case funcType_Ptr_Ptr:
-		return C.callFunc_Ptr_Ptr(f, C.uintptr_t(args[0])), nil
+		return C.uint64_t(C.callFunc_Ptr_Ptr(f, C.uintptr_t(args[0]))), nil
 	}
 
 	return 0, fmt.Errorf("steamworks: function %s not implemented", name)
@@ -182,7 +189,7 @@ func cBool(x bool) uintptr {
 }
 
 func RestartAppIfNecessary(appID uint32) bool {
-	v, err := theLib.call(funcType_Bool_Uint32, flatAPI_RestartAppIfNecessary, uintptr(appID))
+	v, err := theLib.call(funcType_Bool_Int32, flatAPI_RestartAppIfNecessary, uintptr(appID))
 	if err != nil {
 		panic(err)
 	}
@@ -221,7 +228,7 @@ func (s steamApps) GetCurrentGameLanguage() string {
 	if err != nil {
 		panic(err)
 	}
-	return C.GoString(C.uintptrToChar(v))
+	return C.GoString(C.uintptrToChar(C.uintptr_t(v)))
 }
 
 func SteamRemoteStorage() ISteamRemoteStorage {
@@ -280,6 +287,24 @@ func (s steamRemoteStorage) GetFileSize(file string) int32 {
 		panic(err)
 	}
 	return int32(v)
+}
+
+func SteamUser() ISteamUser {
+	v, err := theLib.call(funcType_Ptr, flatAPI_SteamUser)
+	if err != nil {
+		panic(err)
+	}
+	return steamUser(v)
+}
+
+type steamUser C.uintptr_t
+
+func (s steamUser) GetSteamID() CSteamID {
+	v, err := theLib.call(funcType_Int64_Ptr, flatAPI_ISteamUser_GetSteamID, uintptr(s))
+	if err != nil {
+		panic(err)
+	}
+	return CSteamID(v)
 }
 
 func SteamUserStats() ISteamUserStats {
