@@ -213,7 +213,7 @@ func (s steamApps) GetAppInstallDir(appID AppId_t) string {
 	if err != nil {
 		panic(err)
 	}
-	return string(path[:uint32(v)])
+	return string(path[:uint32(v)-1])
 }
 
 func (s steamApps) GetCurrentGameLanguage() string {
