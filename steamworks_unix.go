@@ -77,6 +77,10 @@ import (
 // static uintptr_t callFunc_Ptr_Ptr(uintptr_t f, uintptr_t arg0) {
 //   return (uintptr_t)((void* (*)(void*))(f))((void*)arg0);
 // }
+//
+// static void callFunc_Void(uintptr_t f) {
+//   ((void (*)())(f))();
+// }
 import "C"
 
 type lib struct {
@@ -99,6 +103,7 @@ const (
 	funcType_Int64_Ptr
 	funcType_Ptr
 	funcType_Ptr_Ptr
+	funcType_Void
 )
 
 func (l *lib) call(ftype funcType, name string, args ...uintptr) (C.uint64_t, error) {
@@ -138,6 +143,9 @@ func (l *lib) call(ftype funcType, name string, args ...uintptr) (C.uint64_t, er
 		return C.uint64_t(C.callFunc_Ptr(f)), nil
 	case funcType_Ptr_Ptr:
 		return C.uint64_t(C.callFunc_Ptr_Ptr(f, C.uintptr_t(args[0]))), nil
+	case funcType_Void:
+		C.callFunc_Void(f)
+		return 0, nil
 	}
 
 	return 0, fmt.Errorf("steamworks: function %s not implemented", name)
@@ -202,6 +210,12 @@ func Init() bool {
 		panic(err)
 	}
 	return byte(v) != 0
+}
+
+func RunCallbacks() {
+	if _, err := theLib.call(funcType_Void, flatAPI_RunCallbacks); err != nil {
+		panic(err)
+	}
 }
 
 func SteamApps() ISteamApps {
@@ -316,6 +330,15 @@ func SteamUserStats() ISteamUserStats {
 }
 
 type steamUserStats C.uintptr_t
+
+func (s steamUserStats) RequestCurrentStats() bool {
+	v, err := theLib.call(funcType_Bool_Ptr, flatAPI_ISteamUserStats_RequestCurrentStats, uintptr(s))
+	if err != nil {
+		panic(err)
+	}
+
+	return byte(v) != 0
+}
 
 func (s steamUserStats) GetAchievement(name string) (achieved, success bool) {
 	cname := C.CString(name)

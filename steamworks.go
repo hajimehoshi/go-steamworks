@@ -22,6 +22,7 @@ type ISteamUser interface {
 }
 
 type ISteamUserStats interface {
+	RequestCurrentStats() bool
 	GetAchievement(name string) (achieved, success bool)
 	SetAchievement(name string) bool
 	ClearAchievement(name string) bool
@@ -31,6 +32,7 @@ type ISteamUserStats interface {
 const (
 	flatAPI_RestartAppIfNecessary = "SteamAPI_RestartAppIfNecessary"
 	flatAPI_Init                  = "SteamAPI_Init"
+	flatAPI_RunCallbacks          = "SteamAPI_RunCallbacks"
 
 	flatAPI_SteamApps                         = "SteamAPI_SteamApps_v008"
 	flatAPI_ISteamApps_GetAppInstallDir       = "SteamAPI_ISteamApps_GetAppInstallDir"
@@ -45,9 +47,10 @@ const (
 	flatAPI_SteamUser             = "SteamAPI_SteamUser_v021"
 	flatAPI_ISteamUser_GetSteamID = "SteamAPI_ISteamUser_GetSteamID"
 
-	flatAPI_SteamUserStats                   = "SteamAPI_SteamUserStats_v012"
-	flatAPI_ISteamUserStats_GetAchievement   = "SteamAPI_ISteamUserStats_GetAchievement"
-	flatAPI_ISteamUserStats_SetAchievement   = "SteamAPI_ISteamUserStats_SetAchievement"
-	flatAPI_ISteamUserStats_ClearAchievement = "SteamAPI_ISteamUserStats_ClearAchievement"
-	flatAPI_ISteamUserStats_StoreStats       = "SteamAPI_ISteamUserStats_StoreStats"
+	flatAPI_SteamUserStats                      = "SteamAPI_SteamUserStats_v012"
+	flatAPI_ISteamUserStats_RequestCurrentStats = "SteamAPI_ISteamUserStats_RequestCurrentStats"
+	flatAPI_ISteamUserStats_GetAchievement      = "SteamAPI_ISteamUserStats_GetAchievement"
+	flatAPI_ISteamUserStats_SetAchievement      = "SteamAPI_ISteamUserStats_SetAchievement"
+	flatAPI_ISteamUserStats_ClearAchievement    = "SteamAPI_ISteamUserStats_ClearAchievement"
+	flatAPI_ISteamUserStats_StoreStats          = "SteamAPI_ISteamUserStats_StoreStats"
 )

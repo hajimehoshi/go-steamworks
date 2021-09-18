@@ -92,6 +92,12 @@ func Init() bool {
 	return byte(v) != 0
 }
 
+func RunCallbacks() {
+	if _, err := theDLL.call(flatAPI_RunCallbacks); err != nil {
+		panic(err)
+	}
+}
+
 func SteamApps() ISteamApps {
 	v, err := theDLL.call(flatAPI_SteamApps)
 	if err != nil {
@@ -222,6 +228,15 @@ func SteamUserStats() ISteamUserStats {
 }
 
 type steamUserStats uintptr
+
+func (s steamUserStats) RequestCurrentStats() bool {
+	v, err := theDLL.call(flatAPI_ISteamUserStats_RequestCurrentStats, uintptr(s))
+	if err != nil {
+		panic(err)
+	}
+
+	return byte(v) != 0
+}
 
 func (s steamUserStats) GetAchievement(name string) (achieved, success bool) {
 	cname := append([]byte(name), 0)
