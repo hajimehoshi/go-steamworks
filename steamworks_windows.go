@@ -208,7 +208,7 @@ func SteamUser() ISteamUser {
 type steamUser uintptr
 
 func (s steamUser) GetSteamID() CSteamID {
-	if runtime.GOARCH == "386" || runtime.GOARCH == "arm" {
+	if unsafe.Sizeof(int(0)) == 4 {
 		// On 32bit machines, syscall cannot treat a returned value as 64bit.
 		panic("GetSteamID is not implemented on 32bit Windows")
 	}
