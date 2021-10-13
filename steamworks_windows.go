@@ -4,13 +4,13 @@
 package steamworks
 
 import (
-	"os"
-	"path/filepath"
 	"runtime"
 	"unsafe"
 
 	"golang.org/x/sys/windows"
 )
+
+const is32Bit = unsafe.Sizeof(int(0)) == 4
 
 type dll struct {
 	d     *windows.LazyDLL
@@ -38,31 +38,13 @@ func (d *dll) call(name string, args ...uintptr) (uintptr, error) {
 }
 
 func loadDLL() (*dll, error) {
-	cachedir, err := os.UserCacheDir()
-	if err != nil {
-		return nil, err
-	}
-
-	dir := filepath.Join(cachedir, "go-steamworks")
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		return nil, err
-	}
-
-	fn := filepath.Join(dir, steamAPIDLLHash+".dll")
-	if _, err := os.Stat(fn); err != nil {
-		if !os.IsNotExist(err) {
-			return nil, err
-		}
-		if err := os.WriteFile(fn+".tmp", steamAPIDLL, 0644); err != nil {
-			return nil, err
-		}
-		if err := os.Rename(fn+".tmp", fn); err != nil {
-			return nil, err
-		}
+	dllName := "steam_api.dll"
+	if !is32Bit {
+		dllName = "steam_api64.dll"
 	}
 
 	return &dll{
-		d: windows.NewLazyDLL(fn),
+		d: windows.NewLazyDLL(dllName),
 	}, nil
 }
 
@@ -208,7 +190,7 @@ func SteamUser() ISteamUser {
 type steamUser uintptr
 
 func (s steamUser) GetSteamID() CSteamID {
-	if unsafe.Sizeof(int(0)) == 4 {
+	if is32Bit {
 		// On 32bit machines, syscall cannot treat a returned value as 64bit.
 		panic("GetSteamID is not implemented on 32bit Windows")
 	}

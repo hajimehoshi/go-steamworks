@@ -6,6 +6,11 @@ A Steamworks SDK binding for Go
 
 ## How to use
 
+On Windows, copy one of these files on the working directory:
+
+ * `steam_api.dll` (32bit)
+ * `steam_api64.dll` (64bit)
+
 ```go
 package steamapi
 
