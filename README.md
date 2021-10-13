@@ -8,8 +8,8 @@ A Steamworks SDK binding for Go
 
 On Windows, copy one of these files on the working directory:
 
- * `steam_api.dll` (32bit)
- * `steam_api64.dll` (64bit)
+ * `steam_api.dll` (For 32bit. Copy `redistribution_bin/steam_api.dll` in the SDK)
+ * `steam_api64.dll` (For 64bit. Copy `redistribution_bin/win64/steam_api64.dll` in the SDK)
 
 ```go
 package steamapi
@@ -52,8 +52,6 @@ These binary files are copied from Steamworks SDK's `redistribution_bin` directo
  * `libsteam_api.dylib` (copied from `osx/libsteam_api.dylib`)
  * `libsteam_api.so` (copied from `linux32/libsteam_api.so`)
  * `libsteam_api64.so` (copied from `linux64/libsteam_api.so`)
- * `steam_api.dll` (copied from `steam_api.dll`)
- * `steam_api64.dll` (copied from `win64/steam_api64.dll`)
 
 ## Resources
 
