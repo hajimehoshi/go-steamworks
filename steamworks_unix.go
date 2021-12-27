@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2021 The go-steamworks Authors
+// SPDX-FileCopyrightText: 2021 The go-steamworks Authors
 
 //go:build !windows
 // +build !windows
