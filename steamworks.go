@@ -5,6 +5,9 @@
 
 package steamworks
 
+type AppId_t uint32
+type CSteamID uint64
+
 type ISteamApps interface {
 	GetAppInstallDir(appID AppId_t) string
 	GetCurrentGameLanguage() string
