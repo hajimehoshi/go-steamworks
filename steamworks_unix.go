@@ -37,6 +37,10 @@ import (
 //   return ((bool (*)(void*))(f))((void*)arg0);
 // }
 //
+// static uint8_t callFunc_Bool_Ptr_Bool(uintptr_t f, uintptr_t arg0, uint8_t arg1) {
+//   return ((bool (*)(void*, bool))(f))((void*)arg0, (bool)arg1);
+// }
+//
 // static uint8_t callFunc_Bool_Ptr_Ptr(uintptr_t f, uintptr_t arg0, uintptr_t arg1) {
 //   return ((bool (*)(void*, void*))(f))((void*)arg0, (void*)arg1);
 // }
@@ -61,6 +65,14 @@ import (
 //   return ((int32_t (*)(void*, int32_t, void*, int32_t))(f))((void*)arg0, arg1, (void*)arg2, arg3);
 // }
 //
+// static int32_t callFunc_Int32_Ptr_Int64(uintptr_t f, uintptr_t arg0, int64_t arg1) {
+//   return ((int32_t (*)(void*, int64_t))(f))((void*)arg0, arg1);
+// }
+//
+// static int32_t callFunc_Int32_Ptr_Ptr(uintptr_t f, uintptr_t arg0, uintptr_t arg1) {
+//   return ((int32_t (*)(void*, void*))(f))((void*)arg0, (void*)arg1);
+// }
+//
 // static int32_t callFunc_Int32_Ptr_Ptr_Ptr_Int32(uintptr_t f, uintptr_t arg0, uintptr_t arg1, uintptr_t arg2, int32_t arg3) {
 //   return ((int32_t (*)(void*, void*, void*, int32_t))(f))((void*)arg0, (void*)arg1, (void*)arg2, arg3);
 // }
@@ -80,6 +92,10 @@ import (
 // static void callFunc_Void(uintptr_t f) {
 //   ((void (*)())(f))();
 // }
+//
+// static void callFunc_Void_Ptr_Bool(uintptr_t f, uintptr_t arg0, uint8_t arg1) {
+//   ((void (*)(void*, bool))(f))((void*)arg0, (bool)arg1);
+// }
 import "C"
 
 type lib struct {
@@ -92,17 +108,22 @@ type funcType int
 const (
 	funcType_Bool funcType = iota
 	funcType_Bool_Ptr
+	funcType_Bool_Ptr_Bool
 	funcType_Bool_Ptr_Ptr
 	funcType_Bool_Ptr_Ptr_Ptr
 	funcType_Bool_Ptr_Ptr_Ptr_Int32
 	funcType_Bool_Int32
+	funcType_Int32_Int64
 	funcType_Int32_Ptr
 	funcType_Int32_Ptr_Int32_Ptr_Int32
+	funcType_Int32_Ptr_Int64
+	funcType_Int32_Ptr_Ptr
 	funcType_Int32_Ptr_Ptr_Ptr_Int32
 	funcType_Int64_Ptr
 	funcType_Ptr
 	funcType_Ptr_Ptr
 	funcType_Void
+	funcType_Void_Ptr_Bool
 )
 
 func (l *lib) call(ftype funcType, name string, args ...uintptr) (C.uint64_t, error) {
@@ -122,6 +143,8 @@ func (l *lib) call(ftype funcType, name string, args ...uintptr) (C.uint64_t, er
 		return C.uint64_t(C.callFunc_Bool(f)), nil
 	case funcType_Bool_Ptr:
 		return C.uint64_t(C.callFunc_Bool_Ptr(f, C.uintptr_t(args[0]))), nil
+	case funcType_Bool_Ptr_Bool:
+		return C.uint64_t(C.callFunc_Bool_Ptr_Bool(f, C.uintptr_t(args[0]), C.uint8_t(args[1]))), nil
 	case funcType_Bool_Ptr_Ptr:
 		return C.uint64_t(C.callFunc_Bool_Ptr_Ptr(f, C.uintptr_t(args[0]), C.uintptr_t(args[1]))), nil
 	case funcType_Bool_Ptr_Ptr_Ptr:
@@ -134,6 +157,10 @@ func (l *lib) call(ftype funcType, name string, args ...uintptr) (C.uint64_t, er
 		return C.uint64_t(C.callFunc_Int32_Ptr(f, C.uintptr_t(args[0]))), nil
 	case funcType_Int32_Ptr_Int32_Ptr_Int32:
 		return C.uint64_t(C.callFunc_Int32_Ptr_Int32_Ptr_Int32(f, C.uintptr_t(args[0]), C.int32_t(args[1]), C.uintptr_t(args[2]), C.int32_t(args[3]))), nil
+	case funcType_Int32_Ptr_Int64:
+		return C.uint64_t(C.callFunc_Int32_Ptr_Int64(f, C.uintptr_t(args[0]), C.int64_t(args[1]))), nil
+	case funcType_Int32_Ptr_Ptr:
+		return C.uint64_t(C.callFunc_Int32_Ptr_Ptr(f, C.uintptr_t(args[0]), C.uintptr_t(args[1]))), nil
 	case funcType_Int32_Ptr_Ptr_Ptr_Int32:
 		return C.uint64_t(C.callFunc_Int32_Ptr_Ptr_Ptr_Int32(f, C.uintptr_t(args[0]), C.uintptr_t(args[1]), C.uintptr_t(args[2]), C.int32_t(args[3]))), nil
 	case funcType_Int64_Ptr:
@@ -144,6 +171,9 @@ func (l *lib) call(ftype funcType, name string, args ...uintptr) (C.uint64_t, er
 		return C.uint64_t(C.callFunc_Ptr_Ptr(f, C.uintptr_t(args[0]))), nil
 	case funcType_Void:
 		C.callFunc_Void(f)
+		return 0, nil
+	case funcType_Void_Ptr_Bool:
+		C.callFunc_Void_Ptr_Bool(f, C.uintptr_t(args[0]), C.uint8_t(args[1]))
 		return 0, nil
 	}
 
@@ -242,6 +272,51 @@ func (s steamApps) GetCurrentGameLanguage() string {
 		panic(err)
 	}
 	return C.GoString(C.uintptrToChar(C.uintptr_t(v)))
+}
+
+func SteamInput() ISteamInput {
+	v, err := theLib.call(funcType_Ptr, flatAPI_SteamInput)
+	if err != nil {
+		panic(err)
+	}
+	return steamInput(v)
+}
+
+type steamInput C.uintptr_t
+
+func (s steamInput) GetConnectedControllers() []InputHandle_t {
+	var handles [_STEAM_INPUT_MAX_COUNT]InputHandle_t
+	v, err := theLib.call(funcType_Int32_Ptr_Ptr, flatAPI_ISteamInput_GetConnectedControllers, uintptr(s), uintptr(unsafe.Pointer(&handles[0])))
+	if err != nil {
+		panic(err)
+	}
+	return handles[:int(v)]
+}
+
+func (s steamInput) GetInputTypeForHandle(inputHandle InputHandle_t) ESteamInputType {
+	v, err := theLib.call(funcType_Int32_Ptr_Int64, flatAPI_ISteamInput_GetInputTypeForHandle, uintptr(s), uintptr(inputHandle))
+	if err != nil {
+		panic(err)
+	}
+	return ESteamInputType(v)
+}
+
+func (s steamInput) Init(bExplicitlyCallRunFrame bool) bool {
+	var callRunFrame uintptr
+	if bExplicitlyCallRunFrame {
+		callRunFrame = 1
+	}
+	v, err := theLib.call(funcType_Bool_Ptr_Bool, flatAPI_ISteamInput_Init, uintptr(s), callRunFrame)
+	if err != nil {
+		panic(err)
+	}
+	return byte(v) != 0
+}
+
+func (s steamInput) RunFrame() {
+	if _, err := theLib.call(funcType_Void_Ptr_Bool, flatAPI_ISteamInput_RunFrame, uintptr(s), 0); err != nil {
+		panic(err)
+	}
 }
 
 func SteamRemoteStorage() ISteamRemoteStorage {

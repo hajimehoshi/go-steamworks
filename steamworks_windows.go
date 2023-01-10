@@ -117,6 +117,49 @@ func (s steamApps) GetCurrentGameLanguage() string {
 	return string(bs)
 }
 
+func SteamInput() ISteamInput {
+	v, err := theDLL.call(flatAPI_SteamInput)
+	if err != nil {
+		panic(err)
+	}
+	return steamInput(v)
+}
+
+type steamInput uintptr
+
+func (s steamInput) GetConnectedControllers() []InputHandle_t {
+	var handles [_STEAM_INPUT_MAX_COUNT]InputHandle_t
+	v, err := theDLL.call(flatAPI_ISteamInput_GetConnectedControllers, uintptr(s), uintptr(unsafe.Pointer(&handles[0])))
+	if err != nil {
+		panic(err)
+	}
+	return handles[:int(v)]
+}
+
+func (s steamInput) GetInputTypeForHandle(inputHandle InputHandle_t) ESteamInputType {
+	v, err := theDLL.call(flatAPI_ISteamInput_GetInputTypeForHandle, uintptr(s), uintptr(inputHandle))
+	if err != nil {
+		panic(err)
+	}
+	return ESteamInputType(v)
+}
+
+func (s steamInput) Init(bExplicitlyCallRunFrame bool) bool {
+	var callRunFrame uintptr
+	if bExplicitlyCallRunFrame {
+		callRunFrame = 1
+	}
+	// The error value seems unreliable.
+	v, _ := theDLL.call(flatAPI_ISteamInput_Init, uintptr(s), callRunFrame)
+	return byte(v) != 0
+}
+
+func (s steamInput) RunFrame() {
+	if _, err := theDLL.call(flatAPI_ISteamInput_RunFrame, uintptr(s), 0); err != nil {
+		panic(err)
+	}
+}
+
 func SteamRemoteStorage() ISteamRemoteStorage {
 	v, err := theDLL.call(flatAPI_SteamRemoteStorage)
 	if err != nil {
