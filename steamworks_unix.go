@@ -2,7 +2,6 @@
 // SPDX-FileCopyrightText: 2021 The go-steamworks Authors
 
 //go:build !windows
-// +build !windows
 
 package steamworks
 
