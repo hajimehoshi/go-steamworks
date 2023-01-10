@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-const version = "151"
+const version = "155"
 
 type SteamAPI struct {
 	CallbackStructs []SteamAPICallbackStruct `json:"callback_structs"`
