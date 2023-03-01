@@ -127,6 +127,14 @@ func SteamInput() ISteamInput {
 
 type steamInput uintptr
 
+func (s steamInput) GetActionOriginFromXboxOrigin(inputHandle InputHandle_t, eOrigin EXboxOrigin) EInputActionOrigin {
+	v, err := theDLL.call(flatAPI_ISteamInput_GetActionOriginFromXboxOrigin, uintptr(s), uintptr(inputHandle), uintptr(eOrigin))
+	if err != nil {
+		panic(err)
+	}
+	return EInputActionOrigin(v)
+}
+
 func (s steamInput) GetConnectedControllers() []InputHandle_t {
 	var handles [_STEAM_INPUT_MAX_COUNT]InputHandle_t
 	v, err := theDLL.call(flatAPI_ISteamInput_GetConnectedControllers, uintptr(s), uintptr(unsafe.Pointer(&handles[0])))
@@ -134,6 +142,14 @@ func (s steamInput) GetConnectedControllers() []InputHandle_t {
 		panic(err)
 	}
 	return handles[:int(v)]
+}
+
+func (s steamInput) GetControllerForGamepadIndex(nIndex int32) InputHandle_t {
+	v, err := theDLL.call(flatAPI_ISteamInput_GetControllerForGamepadIndex, uintptr(s), uintptr(nIndex))
+	if err != nil {
+		panic(err)
+	}
+	return InputHandle_t(v)
 }
 
 func (s steamInput) GetInputTypeForHandle(inputHandle InputHandle_t) ESteamInputType {
@@ -158,6 +174,14 @@ func (s steamInput) RunFrame() {
 	if _, err := theDLL.call(flatAPI_ISteamInput_RunFrame, uintptr(s), 0); err != nil {
 		panic(err)
 	}
+}
+
+func (s steamInput) TranslateActionOrigin(eDestinationInputType ESteamInputType, eSourceOrigin EInputActionOrigin) EInputActionOrigin {
+	v, err := theDLL.call(flatAPI_ISteamInput_TranslateActionOrigin, uintptr(s), uintptr(eDestinationInputType), uintptr(eSourceOrigin))
+	if err != nil {
+		panic(err)
+	}
+	return EInputActionOrigin(v)
 }
 
 func SteamRemoteStorage() ISteamRemoteStorage {

@@ -9,26 +9,490 @@ type AppId_t uint32
 type CSteamID uint64
 type InputHandle_t uint64
 
+type EInputActionOrigin int32
+
+const (
+	// Steam Controller
+	EInputActionOrigin_None EInputActionOrigin = iota
+	EInputActionOrigin_SteamController_A
+	EInputActionOrigin_SteamController_B
+	EInputActionOrigin_SteamController_X
+	EInputActionOrigin_SteamController_Y
+	EInputActionOrigin_SteamController_LeftBumper
+	EInputActionOrigin_SteamController_RightBumper
+	EInputActionOrigin_SteamController_LeftGrip
+	EInputActionOrigin_SteamController_RightGrip
+	EInputActionOrigin_SteamController_Start
+	EInputActionOrigin_SteamController_Back
+	EInputActionOrigin_SteamController_LeftPad_Touch
+	EInputActionOrigin_SteamController_LeftPad_Swipe
+	EInputActionOrigin_SteamController_LeftPad_Click
+	EInputActionOrigin_SteamController_LeftPad_DPadNorth
+	EInputActionOrigin_SteamController_LeftPad_DPadSouth
+	EInputActionOrigin_SteamController_LeftPad_DPadWest
+	EInputActionOrigin_SteamController_LeftPad_DPadEast
+	EInputActionOrigin_SteamController_RightPad_Touch
+	EInputActionOrigin_SteamController_RightPad_Swipe
+	EInputActionOrigin_SteamController_RightPad_Click
+	EInputActionOrigin_SteamController_RightPad_DPadNorth
+	EInputActionOrigin_SteamController_RightPad_DPadSouth
+	EInputActionOrigin_SteamController_RightPad_DPadWest
+	EInputActionOrigin_SteamController_RightPad_DPadEast
+	EInputActionOrigin_SteamController_LeftTrigger_Pull
+	EInputActionOrigin_SteamController_LeftTrigger_Click
+	EInputActionOrigin_SteamController_RightTrigger_Pull
+	EInputActionOrigin_SteamController_RightTrigger_Click
+	EInputActionOrigin_SteamController_LeftStick_Move
+	EInputActionOrigin_SteamController_LeftStick_Click
+	EInputActionOrigin_SteamController_LeftStick_DPadNorth
+	EInputActionOrigin_SteamController_LeftStick_DPadSouth
+	EInputActionOrigin_SteamController_LeftStick_DPadWest
+	EInputActionOrigin_SteamController_LeftStick_DPadEast
+	EInputActionOrigin_SteamController_Gyro_Move
+	EInputActionOrigin_SteamController_Gyro_Pitch
+	EInputActionOrigin_SteamController_Gyro_Yaw
+	EInputActionOrigin_SteamController_Gyro_Roll
+	EInputActionOrigin_SteamController_Reserved0
+	EInputActionOrigin_SteamController_Reserved1
+	EInputActionOrigin_SteamController_Reserved2
+	EInputActionOrigin_SteamController_Reserved3
+	EInputActionOrigin_SteamController_Reserved4
+	EInputActionOrigin_SteamController_Reserved5
+	EInputActionOrigin_SteamController_Reserved6
+	EInputActionOrigin_SteamController_Reserved7
+	EInputActionOrigin_SteamController_Reserved8
+	EInputActionOrigin_SteamController_Reserved9
+	EInputActionOrigin_SteamController_Reserved10
+
+	// PS4 Dual Shock
+	EInputActionOrigin_PS4_X
+	EInputActionOrigin_PS4_Circle
+	EInputActionOrigin_PS4_Triangle
+	EInputActionOrigin_PS4_Square
+	EInputActionOrigin_PS4_LeftBumper
+	EInputActionOrigin_PS4_RightBumper
+	EInputActionOrigin_PS4_Options //Start
+	EInputActionOrigin_PS4_Share   //Back
+	EInputActionOrigin_PS4_LeftPad_Touch
+	EInputActionOrigin_PS4_LeftPad_Swipe
+	EInputActionOrigin_PS4_LeftPad_Click
+	EInputActionOrigin_PS4_LeftPad_DPadNorth
+	EInputActionOrigin_PS4_LeftPad_DPadSouth
+	EInputActionOrigin_PS4_LeftPad_DPadWest
+	EInputActionOrigin_PS4_LeftPad_DPadEast
+	EInputActionOrigin_PS4_RightPad_Touch
+	EInputActionOrigin_PS4_RightPad_Swipe
+	EInputActionOrigin_PS4_RightPad_Click
+	EInputActionOrigin_PS4_RightPad_DPadNorth
+	EInputActionOrigin_PS4_RightPad_DPadSouth
+	EInputActionOrigin_PS4_RightPad_DPadWest
+	EInputActionOrigin_PS4_RightPad_DPadEast
+	EInputActionOrigin_PS4_CenterPad_Touch
+	EInputActionOrigin_PS4_CenterPad_Swipe
+	EInputActionOrigin_PS4_CenterPad_Click
+	EInputActionOrigin_PS4_CenterPad_DPadNorth
+	EInputActionOrigin_PS4_CenterPad_DPadSouth
+	EInputActionOrigin_PS4_CenterPad_DPadWest
+	EInputActionOrigin_PS4_CenterPad_DPadEast
+	EInputActionOrigin_PS4_LeftTrigger_Pull
+	EInputActionOrigin_PS4_LeftTrigger_Click
+	EInputActionOrigin_PS4_RightTrigger_Pull
+	EInputActionOrigin_PS4_RightTrigger_Click
+	EInputActionOrigin_PS4_LeftStick_Move
+	EInputActionOrigin_PS4_LeftStick_Click
+	EInputActionOrigin_PS4_LeftStick_DPadNorth
+	EInputActionOrigin_PS4_LeftStick_DPadSouth
+	EInputActionOrigin_PS4_LeftStick_DPadWest
+	EInputActionOrigin_PS4_LeftStick_DPadEast
+	EInputActionOrigin_PS4_RightStick_Move
+	EInputActionOrigin_PS4_RightStick_Click
+	EInputActionOrigin_PS4_RightStick_DPadNorth
+	EInputActionOrigin_PS4_RightStick_DPadSouth
+	EInputActionOrigin_PS4_RightStick_DPadWest
+	EInputActionOrigin_PS4_RightStick_DPadEast
+	EInputActionOrigin_PS4_DPad_North
+	EInputActionOrigin_PS4_DPad_South
+	EInputActionOrigin_PS4_DPad_West
+	EInputActionOrigin_PS4_DPad_East
+	EInputActionOrigin_PS4_Gyro_Move
+	EInputActionOrigin_PS4_Gyro_Pitch
+	EInputActionOrigin_PS4_Gyro_Yaw
+	EInputActionOrigin_PS4_Gyro_Roll
+	EInputActionOrigin_PS4_DPad_Move
+	EInputActionOrigin_PS4_Reserved1
+	EInputActionOrigin_PS4_Reserved2
+	EInputActionOrigin_PS4_Reserved3
+	EInputActionOrigin_PS4_Reserved4
+	EInputActionOrigin_PS4_Reserved5
+	EInputActionOrigin_PS4_Reserved6
+	EInputActionOrigin_PS4_Reserved7
+	EInputActionOrigin_PS4_Reserved8
+	EInputActionOrigin_PS4_Reserved9
+	EInputActionOrigin_PS4_Reserved10
+
+	// XBox One
+	EInputActionOrigin_XBoxOne_A
+	EInputActionOrigin_XBoxOne_B
+	EInputActionOrigin_XBoxOne_X
+	EInputActionOrigin_XBoxOne_Y
+	EInputActionOrigin_XBoxOne_LeftBumper
+	EInputActionOrigin_XBoxOne_RightBumper
+	EInputActionOrigin_XBoxOne_Menu //Start
+	EInputActionOrigin_XBoxOne_View //Back
+	EInputActionOrigin_XBoxOne_LeftTrigger_Pull
+	EInputActionOrigin_XBoxOne_LeftTrigger_Click
+	EInputActionOrigin_XBoxOne_RightTrigger_Pull
+	EInputActionOrigin_XBoxOne_RightTrigger_Click
+	EInputActionOrigin_XBoxOne_LeftStick_Move
+	EInputActionOrigin_XBoxOne_LeftStick_Click
+	EInputActionOrigin_XBoxOne_LeftStick_DPadNorth
+	EInputActionOrigin_XBoxOne_LeftStick_DPadSouth
+	EInputActionOrigin_XBoxOne_LeftStick_DPadWest
+	EInputActionOrigin_XBoxOne_LeftStick_DPadEast
+	EInputActionOrigin_XBoxOne_RightStick_Move
+	EInputActionOrigin_XBoxOne_RightStick_Click
+	EInputActionOrigin_XBoxOne_RightStick_DPadNorth
+	EInputActionOrigin_XBoxOne_RightStick_DPadSouth
+	EInputActionOrigin_XBoxOne_RightStick_DPadWest
+	EInputActionOrigin_XBoxOne_RightStick_DPadEast
+	EInputActionOrigin_XBoxOne_DPad_North
+	EInputActionOrigin_XBoxOne_DPad_South
+	EInputActionOrigin_XBoxOne_DPad_West
+	EInputActionOrigin_XBoxOne_DPad_East
+	EInputActionOrigin_XBoxOne_DPad_Move
+	EInputActionOrigin_XBoxOne_LeftGrip_Lower
+	EInputActionOrigin_XBoxOne_LeftGrip_Upper
+	EInputActionOrigin_XBoxOne_RightGrip_Lower
+	EInputActionOrigin_XBoxOne_RightGrip_Upper
+	EInputActionOrigin_XBoxOne_Share // Xbox Series X controllers only
+	EInputActionOrigin_XBoxOne_Reserved6
+	EInputActionOrigin_XBoxOne_Reserved7
+	EInputActionOrigin_XBoxOne_Reserved8
+	EInputActionOrigin_XBoxOne_Reserved9
+	EInputActionOrigin_XBoxOne_Reserved10
+
+	// XBox 360
+	EInputActionOrigin_XBox360_A
+	EInputActionOrigin_XBox360_B
+	EInputActionOrigin_XBox360_X
+	EInputActionOrigin_XBox360_Y
+	EInputActionOrigin_XBox360_LeftBumper
+	EInputActionOrigin_XBox360_RightBumper
+	EInputActionOrigin_XBox360_Start //Start
+	EInputActionOrigin_XBox360_Back  //Back
+	EInputActionOrigin_XBox360_LeftTrigger_Pull
+	EInputActionOrigin_XBox360_LeftTrigger_Click
+	EInputActionOrigin_XBox360_RightTrigger_Pull
+	EInputActionOrigin_XBox360_RightTrigger_Click
+	EInputActionOrigin_XBox360_LeftStick_Move
+	EInputActionOrigin_XBox360_LeftStick_Click
+	EInputActionOrigin_XBox360_LeftStick_DPadNorth
+	EInputActionOrigin_XBox360_LeftStick_DPadSouth
+	EInputActionOrigin_XBox360_LeftStick_DPadWest
+	EInputActionOrigin_XBox360_LeftStick_DPadEast
+	EInputActionOrigin_XBox360_RightStick_Move
+	EInputActionOrigin_XBox360_RightStick_Click
+	EInputActionOrigin_XBox360_RightStick_DPadNorth
+	EInputActionOrigin_XBox360_RightStick_DPadSouth
+	EInputActionOrigin_XBox360_RightStick_DPadWest
+	EInputActionOrigin_XBox360_RightStick_DPadEast
+	EInputActionOrigin_XBox360_DPad_North
+	EInputActionOrigin_XBox360_DPad_South
+	EInputActionOrigin_XBox360_DPad_West
+	EInputActionOrigin_XBox360_DPad_East
+	EInputActionOrigin_XBox360_DPad_Move
+	EInputActionOrigin_XBox360_Reserved1
+	EInputActionOrigin_XBox360_Reserved2
+	EInputActionOrigin_XBox360_Reserved3
+	EInputActionOrigin_XBox360_Reserved4
+	EInputActionOrigin_XBox360_Reserved5
+	EInputActionOrigin_XBox360_Reserved6
+	EInputActionOrigin_XBox360_Reserved7
+	EInputActionOrigin_XBox360_Reserved8
+	EInputActionOrigin_XBox360_Reserved9
+	EInputActionOrigin_XBox360_Reserved10
+
+	// Switch - Pro or Joycons used as a single input device.
+	// This does not apply to a single joycon
+	EInputActionOrigin_Switch_A
+	EInputActionOrigin_Switch_B
+	EInputActionOrigin_Switch_X
+	EInputActionOrigin_Switch_Y
+	EInputActionOrigin_Switch_LeftBumper
+	EInputActionOrigin_Switch_RightBumper
+	EInputActionOrigin_Switch_Plus  //Start
+	EInputActionOrigin_Switch_Minus //Back
+	EInputActionOrigin_Switch_Capture
+	EInputActionOrigin_Switch_LeftTrigger_Pull
+	EInputActionOrigin_Switch_LeftTrigger_Click
+	EInputActionOrigin_Switch_RightTrigger_Pull
+	EInputActionOrigin_Switch_RightTrigger_Click
+	EInputActionOrigin_Switch_LeftStick_Move
+	EInputActionOrigin_Switch_LeftStick_Click
+	EInputActionOrigin_Switch_LeftStick_DPadNorth
+	EInputActionOrigin_Switch_LeftStick_DPadSouth
+	EInputActionOrigin_Switch_LeftStick_DPadWest
+	EInputActionOrigin_Switch_LeftStick_DPadEast
+	EInputActionOrigin_Switch_RightStick_Move
+	EInputActionOrigin_Switch_RightStick_Click
+	EInputActionOrigin_Switch_RightStick_DPadNorth
+	EInputActionOrigin_Switch_RightStick_DPadSouth
+	EInputActionOrigin_Switch_RightStick_DPadWest
+	EInputActionOrigin_Switch_RightStick_DPadEast
+	EInputActionOrigin_Switch_DPad_North
+	EInputActionOrigin_Switch_DPad_South
+	EInputActionOrigin_Switch_DPad_West
+	EInputActionOrigin_Switch_DPad_East
+	EInputActionOrigin_Switch_ProGyro_Move  // Primary Gyro in Pro Controller, or Right JoyCon
+	EInputActionOrigin_Switch_ProGyro_Pitch // Primary Gyro in Pro Controller, or Right JoyCon
+	EInputActionOrigin_Switch_ProGyro_Yaw   // Primary Gyro in Pro Controller, or Right JoyCon
+	EInputActionOrigin_Switch_ProGyro_Roll  // Primary Gyro in Pro Controller, or Right JoyCon
+	EInputActionOrigin_Switch_DPad_Move
+	EInputActionOrigin_Switch_Reserved1
+	EInputActionOrigin_Switch_Reserved2
+	EInputActionOrigin_Switch_Reserved3
+	EInputActionOrigin_Switch_Reserved4
+	EInputActionOrigin_Switch_Reserved5
+	EInputActionOrigin_Switch_Reserved6
+	EInputActionOrigin_Switch_Reserved7
+	EInputActionOrigin_Switch_Reserved8
+	EInputActionOrigin_Switch_Reserved9
+	EInputActionOrigin_Switch_Reserved10
+
+	// Switch JoyCon Specific
+	EInputActionOrigin_Switch_RightGyro_Move  // Right JoyCon Gyro generally should correspond to Pro's single gyro
+	EInputActionOrigin_Switch_RightGyro_Pitch // Right JoyCon Gyro generally should correspond to Pro's single gyro
+	EInputActionOrigin_Switch_RightGyro_Yaw   // Right JoyCon Gyro generally should correspond to Pro's single gyro
+	EInputActionOrigin_Switch_RightGyro_Roll  // Right JoyCon Gyro generally should correspond to Pro's single gyro
+	EInputActionOrigin_Switch_LeftGyro_Move
+	EInputActionOrigin_Switch_LeftGyro_Pitch
+	EInputActionOrigin_Switch_LeftGyro_Yaw
+	EInputActionOrigin_Switch_LeftGyro_Roll
+	EInputActionOrigin_Switch_LeftGrip_Lower  // Left JoyCon SR Button
+	EInputActionOrigin_Switch_LeftGrip_Upper  // Left JoyCon SL Button
+	EInputActionOrigin_Switch_RightGrip_Lower // Right JoyCon SL Button
+	EInputActionOrigin_Switch_RightGrip_Upper // Right JoyCon SR Button
+	EInputActionOrigin_Switch_Reserved11
+	EInputActionOrigin_Switch_Reserved12
+	EInputActionOrigin_Switch_Reserved13
+	EInputActionOrigin_Switch_Reserved14
+	EInputActionOrigin_Switch_Reserved15
+	EInputActionOrigin_Switch_Reserved16
+	EInputActionOrigin_Switch_Reserved17
+	EInputActionOrigin_Switch_Reserved18
+	EInputActionOrigin_Switch_Reserved19
+	EInputActionOrigin_Switch_Reserved20
+
+	// Added in SDK 1.51
+	EInputActionOrigin_PS5_X
+	EInputActionOrigin_PS5_Circle
+	EInputActionOrigin_PS5_Triangle
+	EInputActionOrigin_PS5_Square
+	EInputActionOrigin_PS5_LeftBumper
+	EInputActionOrigin_PS5_RightBumper
+	EInputActionOrigin_PS5_Option //Start
+	EInputActionOrigin_PS5_Create //Back
+	EInputActionOrigin_PS5_Mute
+	EInputActionOrigin_PS5_LeftPad_Touch
+	EInputActionOrigin_PS5_LeftPad_Swipe
+	EInputActionOrigin_PS5_LeftPad_Click
+	EInputActionOrigin_PS5_LeftPad_DPadNorth
+	EInputActionOrigin_PS5_LeftPad_DPadSouth
+	EInputActionOrigin_PS5_LeftPad_DPadWest
+	EInputActionOrigin_PS5_LeftPad_DPadEast
+	EInputActionOrigin_PS5_RightPad_Touch
+	EInputActionOrigin_PS5_RightPad_Swipe
+	EInputActionOrigin_PS5_RightPad_Click
+	EInputActionOrigin_PS5_RightPad_DPadNorth
+	EInputActionOrigin_PS5_RightPad_DPadSouth
+	EInputActionOrigin_PS5_RightPad_DPadWest
+	EInputActionOrigin_PS5_RightPad_DPadEast
+	EInputActionOrigin_PS5_CenterPad_Touch
+	EInputActionOrigin_PS5_CenterPad_Swipe
+	EInputActionOrigin_PS5_CenterPad_Click
+	EInputActionOrigin_PS5_CenterPad_DPadNorth
+	EInputActionOrigin_PS5_CenterPad_DPadSouth
+	EInputActionOrigin_PS5_CenterPad_DPadWest
+	EInputActionOrigin_PS5_CenterPad_DPadEast
+	EInputActionOrigin_PS5_LeftTrigger_Pull
+	EInputActionOrigin_PS5_LeftTrigger_Click
+	EInputActionOrigin_PS5_RightTrigger_Pull
+	EInputActionOrigin_PS5_RightTrigger_Click
+	EInputActionOrigin_PS5_LeftStick_Move
+	EInputActionOrigin_PS5_LeftStick_Click
+	EInputActionOrigin_PS5_LeftStick_DPadNorth
+	EInputActionOrigin_PS5_LeftStick_DPadSouth
+	EInputActionOrigin_PS5_LeftStick_DPadWest
+	EInputActionOrigin_PS5_LeftStick_DPadEast
+	EInputActionOrigin_PS5_RightStick_Move
+	EInputActionOrigin_PS5_RightStick_Click
+	EInputActionOrigin_PS5_RightStick_DPadNorth
+	EInputActionOrigin_PS5_RightStick_DPadSouth
+	EInputActionOrigin_PS5_RightStick_DPadWest
+	EInputActionOrigin_PS5_RightStick_DPadEast
+	EInputActionOrigin_PS5_DPad_North
+	EInputActionOrigin_PS5_DPad_South
+	EInputActionOrigin_PS5_DPad_West
+	EInputActionOrigin_PS5_DPad_East
+	EInputActionOrigin_PS5_Gyro_Move
+	EInputActionOrigin_PS5_Gyro_Pitch
+	EInputActionOrigin_PS5_Gyro_Yaw
+	EInputActionOrigin_PS5_Gyro_Roll
+	EInputActionOrigin_PS5_DPad_Move
+	EInputActionOrigin_PS5_Reserved1
+	EInputActionOrigin_PS5_Reserved2
+	EInputActionOrigin_PS5_Reserved3
+	EInputActionOrigin_PS5_Reserved4
+	EInputActionOrigin_PS5_Reserved5
+	EInputActionOrigin_PS5_Reserved6
+	EInputActionOrigin_PS5_Reserved7
+	EInputActionOrigin_PS5_Reserved8
+	EInputActionOrigin_PS5_Reserved9
+	EInputActionOrigin_PS5_Reserved10
+	EInputActionOrigin_PS5_Reserved11
+	EInputActionOrigin_PS5_Reserved12
+	EInputActionOrigin_PS5_Reserved13
+	EInputActionOrigin_PS5_Reserved14
+	EInputActionOrigin_PS5_Reserved15
+	EInputActionOrigin_PS5_Reserved16
+	EInputActionOrigin_PS5_Reserved17
+	EInputActionOrigin_PS5_Reserved18
+	EInputActionOrigin_PS5_Reserved19
+	EInputActionOrigin_PS5_Reserved20
+
+	// Added in SDK 1.53
+	EInputActionOrigin_SteamDeck_A
+	EInputActionOrigin_SteamDeck_B
+	EInputActionOrigin_SteamDeck_X
+	EInputActionOrigin_SteamDeck_Y
+	EInputActionOrigin_SteamDeck_L1
+	EInputActionOrigin_SteamDeck_R1
+	EInputActionOrigin_SteamDeck_Menu
+	EInputActionOrigin_SteamDeck_View
+	EInputActionOrigin_SteamDeck_LeftPad_Touch
+	EInputActionOrigin_SteamDeck_LeftPad_Swipe
+	EInputActionOrigin_SteamDeck_LeftPad_Click
+	EInputActionOrigin_SteamDeck_LeftPad_DPadNorth
+	EInputActionOrigin_SteamDeck_LeftPad_DPadSouth
+	EInputActionOrigin_SteamDeck_LeftPad_DPadWest
+	EInputActionOrigin_SteamDeck_LeftPad_DPadEast
+	EInputActionOrigin_SteamDeck_RightPad_Touch
+	EInputActionOrigin_SteamDeck_RightPad_Swipe
+	EInputActionOrigin_SteamDeck_RightPad_Click
+	EInputActionOrigin_SteamDeck_RightPad_DPadNorth
+	EInputActionOrigin_SteamDeck_RightPad_DPadSouth
+	EInputActionOrigin_SteamDeck_RightPad_DPadWest
+	EInputActionOrigin_SteamDeck_RightPad_DPadEast
+	EInputActionOrigin_SteamDeck_L2_SoftPull
+	EInputActionOrigin_SteamDeck_L2
+	EInputActionOrigin_SteamDeck_R2_SoftPull
+	EInputActionOrigin_SteamDeck_R2
+	EInputActionOrigin_SteamDeck_LeftStick_Move
+	EInputActionOrigin_SteamDeck_L3
+	EInputActionOrigin_SteamDeck_LeftStick_DPadNorth
+	EInputActionOrigin_SteamDeck_LeftStick_DPadSouth
+	EInputActionOrigin_SteamDeck_LeftStick_DPadWest
+	EInputActionOrigin_SteamDeck_LeftStick_DPadEast
+	EInputActionOrigin_SteamDeck_LeftStick_Touch
+	EInputActionOrigin_SteamDeck_RightStick_Move
+	EInputActionOrigin_SteamDeck_R3
+	EInputActionOrigin_SteamDeck_RightStick_DPadNorth
+	EInputActionOrigin_SteamDeck_RightStick_DPadSouth
+	EInputActionOrigin_SteamDeck_RightStick_DPadWest
+	EInputActionOrigin_SteamDeck_RightStick_DPadEast
+	EInputActionOrigin_SteamDeck_RightStick_Touch
+	EInputActionOrigin_SteamDeck_L4
+	EInputActionOrigin_SteamDeck_R4
+	EInputActionOrigin_SteamDeck_L5
+	EInputActionOrigin_SteamDeck_R5
+	EInputActionOrigin_SteamDeck_DPad_Move
+	EInputActionOrigin_SteamDeck_DPad_North
+	EInputActionOrigin_SteamDeck_DPad_South
+	EInputActionOrigin_SteamDeck_DPad_West
+	EInputActionOrigin_SteamDeck_DPad_East
+	EInputActionOrigin_SteamDeck_Gyro_Move
+	EInputActionOrigin_SteamDeck_Gyro_Pitch
+	EInputActionOrigin_SteamDeck_Gyro_Yaw
+	EInputActionOrigin_SteamDeck_Gyro_Roll
+	EInputActionOrigin_SteamDeck_Reserved1
+	EInputActionOrigin_SteamDeck_Reserved2
+	EInputActionOrigin_SteamDeck_Reserved3
+	EInputActionOrigin_SteamDeck_Reserved4
+	EInputActionOrigin_SteamDeck_Reserved5
+	EInputActionOrigin_SteamDeck_Reserved6
+	EInputActionOrigin_SteamDeck_Reserved7
+	EInputActionOrigin_SteamDeck_Reserved8
+	EInputActionOrigin_SteamDeck_Reserved9
+	EInputActionOrigin_SteamDeck_Reserved10
+	EInputActionOrigin_SteamDeck_Reserved11
+	EInputActionOrigin_SteamDeck_Reserved12
+	EInputActionOrigin_SteamDeck_Reserved13
+	EInputActionOrigin_SteamDeck_Reserved14
+	EInputActionOrigin_SteamDeck_Reserved15
+	EInputActionOrigin_SteamDeck_Reserved16
+	EInputActionOrigin_SteamDeck_Reserved17
+	EInputActionOrigin_SteamDeck_Reserved18
+	EInputActionOrigin_SteamDeck_Reserved19
+	EInputActionOrigin_SteamDeck_Reserved20
+
+	EInputActionOrigin_Count                        // If Steam has added support for new controllers origins will go here.
+	EInputActionOrigin_MaximumPossibleValue = 32767 // Origins are currently a maximum of 16 bits.
+)
+
 type ESteamInputType int32
 
 const (
-	ESteamInputType_Unknown              ESteamInputType = 0
-	ESteamInputType_SteamController      ESteamInputType = 1
-	ESteamInputType_XBox360Controller    ESteamInputType = 2
-	ESteamInputType_XBoxOneController    ESteamInputType = 3
-	ESteamInputType_GenericXInput        ESteamInputType = 4
-	ESteamInputType_PS4Controller        ESteamInputType = 5
-	ESteamInputType_AppleMFiController   ESteamInputType = 6 // Unused
-	ESteamInputType_AndroidController    ESteamInputType = 7 // Unused
-	ESteamInputType_SwitchJoyConPair     ESteamInputType = 8 // Unused
-	ESteamInputType_SwitchJoyConSingle   ESteamInputType = 9 // Unused
-	ESteamInputType_SwitchProController  ESteamInputType = 10
-	ESteamInputType_MobileTouch          ESteamInputType = 11
-	ESteamInputType_PS3Controller        ESteamInputType = 12
-	ESteamInputType_PS5Controller        ESteamInputType = 13
-	ESteamInputType_SteamDeckController  ESteamInputType = 14
-	ESteamInputType_Count                ESteamInputType = 15
-	ESteamInputType_MaximumPossibleValue ESteamInputType = 255
+	ESteamInputType_Unknown ESteamInputType = iota
+	ESteamInputType_SteamController
+	ESteamInputType_XBox360Controller
+	ESteamInputType_XBoxOneController
+	ESteamInputType_GenericXInput
+	ESteamInputType_PS4Controller
+	ESteamInputType_AppleMFiController // Unused
+	ESteamInputType_AndroidController  // Unused
+	ESteamInputType_SwitchJoyConPair   // Unused
+	ESteamInputType_SwitchJoyConSingle // Unused
+	ESteamInputType_SwitchProController
+	ESteamInputType_MobileTouch
+	ESteamInputType_PS3Controller
+	ESteamInputType_PS5Controller
+	ESteamInputType_SteamDeckController
+	ESteamInputType_Count
+	ESteamInputType_MaximumPossibleValue = 255
+)
+
+type EXboxOrigin int32
+
+const (
+	EXboxOrigin_A EXboxOrigin = iota
+	EXboxOrigin_B
+	EXboxOrigin_X
+	EXboxOrigin_Y
+	EXboxOrigin_LeftBumper
+	EXboxOrigin_RightBumper
+	EXboxOrigin_Menu //Start
+	EXboxOrigin_View //Back
+	EXboxOrigin_LeftTrigger_Pull
+	EXboxOrigin_LeftTrigger_Click
+	EXboxOrigin_RightTrigger_Pull
+	EXboxOrigin_RightTrigger_Click
+	EXboxOrigin_LeftStick_Move
+	EXboxOrigin_LeftStick_Click
+	EXboxOrigin_LeftStick_DPadNorth
+	EXboxOrigin_LeftStick_DPadSouth
+	EXboxOrigin_LeftStick_DPadWest
+	EXboxOrigin_LeftStick_DPadEast
+	EXboxOrigin_RightStick_Move
+	EXboxOrigin_RightStick_Click
+	EXboxOrigin_RightStick_DPadNorth
+	EXboxOrigin_RightStick_DPadSouth
+	EXboxOrigin_RightStick_DPadWest
+	EXboxOrigin_RightStick_DPadEast
+	EXboxOrigin_DPad_North
+	EXboxOrigin_DPad_South
+	EXboxOrigin_DPad_West
+	EXboxOrigin_DPad_East
+	EXboxOrigin_Count
 )
 
 const (
@@ -41,10 +505,13 @@ type ISteamApps interface {
 }
 
 type ISteamInput interface {
+	GetActionOriginFromXboxOrigin(inputHandle InputHandle_t, eOrigin EXboxOrigin) EInputActionOrigin
 	GetConnectedControllers() []InputHandle_t
+	//GetControllerForGamepadIndex(nIndex int32) InputHandle_t
 	GetInputTypeForHandle(inputHandle InputHandle_t) ESteamInputType
 	Init(bExplicitlyCallRunFrame bool) bool
 	RunFrame()
+	TranslateActionOrigin(eDestinationInputType ESteamInputType, eSourceOrigin EInputActionOrigin) EInputActionOrigin
 }
 
 type ISteamRemoteStorage interface {
@@ -75,11 +542,14 @@ const (
 	flatAPI_ISteamApps_GetAppInstallDir       = "SteamAPI_ISteamApps_GetAppInstallDir"
 	flatAPI_ISteamApps_GetCurrentGameLanguage = "SteamAPI_ISteamApps_GetCurrentGameLanguage"
 
-	flatAPI_SteamInput                          = "SteamAPI_SteamInput_v006"
-	flatAPI_ISteamInput_GetConnectedControllers = "SteamAPI_ISteamInput_GetConnectedControllers"
-	flatAPI_ISteamInput_GetInputTypeForHandle   = "SteamAPI_ISteamInput_GetInputTypeForHandle"
-	flatAPI_ISteamInput_Init                    = "SteamAPI_ISteamInput_Init"
-	flatAPI_ISteamInput_RunFrame                = "SteamAPI_ISteamInput_RunFrame"
+	flatAPI_SteamInput                                = "SteamAPI_SteamInput_v006"
+	flatAPI_ISteamInput_GetActionOriginFromXboxOrigin = "SteamAPI_ISteamInput_GetActionOriginFromXboxOrigin"
+	flatAPI_ISteamInput_GetConnectedControllers       = "SteamAPI_ISteamInput_GetConnectedControllers"
+	flatAPI_ISteamInput_GetControllerForGamepadIndex  = "SteamAPI_ISteamInput_GetControllerForGamepadIndex"
+	flatAPI_ISteamInput_GetInputTypeForHandle         = "SteamAPI_ISteamInput_GetInputTypeForHandle"
+	flatAPI_ISteamInput_Init                          = "SteamAPI_ISteamInput_Init"
+	flatAPI_ISteamInput_RunFrame                      = "SteamAPI_ISteamInput_RunFrame"
+	flatAPI_ISteamInput_TranslateActionOrigin         = "SteamAPI_ISteamInput_TranslateActionOrigin"
 
 	flatAPI_SteamRemoteStorage              = "SteamAPI_SteamRemoteStorage_v016"
 	flatAPI_ISteamRemoteStorage_FileWrite   = "SteamAPI_ISteamRemoteStorage_FileWrite"
