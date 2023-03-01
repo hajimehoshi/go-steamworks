@@ -459,3 +459,21 @@ func (s steamUserStats) StoreStats() bool {
 
 	return byte(v) != 0
 }
+
+func SteamUtils() ISteamUtils {
+	v, err := theLib.call(funcType_Ptr, flatAPI_SteamUtils)
+	if err != nil {
+		panic(err)
+	}
+	return steamUtils(v)
+}
+
+type steamUtils C.uintptr_t
+
+func (s steamUtils) IsSteamRunningOnSteamDeck() bool {
+	v, err := theLib.call(funcType_Bool_Ptr, flatAPI_ISteamUtils_IsSteamRunningOnSteamDeck, uintptr(s))
+	if err != nil {
+		panic(err)
+	}
+	return byte(v) != 0
+}

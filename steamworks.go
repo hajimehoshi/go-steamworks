@@ -66,6 +66,10 @@ type ISteamUserStats interface {
 	StoreStats() bool
 }
 
+type ISteamUtils interface {
+	IsSteamRunningOnSteamDeck() bool
+}
+
 const (
 	flatAPI_RestartAppIfNecessary = "SteamAPI_RestartAppIfNecessary"
 	flatAPI_Init                  = "SteamAPI_Init"
@@ -96,4 +100,7 @@ const (
 	flatAPI_ISteamUserStats_SetAchievement      = "SteamAPI_ISteamUserStats_SetAchievement"
 	flatAPI_ISteamUserStats_ClearAchievement    = "SteamAPI_ISteamUserStats_ClearAchievement"
 	flatAPI_ISteamUserStats_StoreStats          = "SteamAPI_ISteamUserStats_StoreStats"
+
+	flatAPI_SteamUtils                            = "SteamAPI_SteamUtils_v010"
+	flatAPI_ISteamUtils_IsSteamRunningOnSteamDeck = "SteamAPI_ISteamUtils_IsSteamRunningOnSteamDeck"
 )

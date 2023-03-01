@@ -308,3 +308,22 @@ func (s steamUserStats) StoreStats() bool {
 
 	return byte(v) != 0
 }
+
+func SteamUtils() ISteamUtils {
+	v, err := theDLL.call(flatAPI_SteamUtils)
+	if err != nil {
+		panic(err)
+	}
+	return steamUtils(v)
+}
+
+type steamUtils uintptr
+
+func (s steamUtils) IsSteamRunningOnSteamDeck() bool {
+	v, err := theDLL.call(flatAPI_ISteamUtils_IsSteamRunningOnSteamDeck, uintptr(s))
+	if err != nil {
+		panic(err)
+	}
+
+	return byte(v) != 0
+}
