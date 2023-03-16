@@ -52,6 +52,8 @@ These binary files are copied from Steamworks SDK's `redistribution_bin` directo
  * `libsteam_api.dylib` (copied from `osx/libsteam_api.dylib`)
  * `libsteam_api.so` (copied from `linux32/libsteam_api.so`)
  * `libsteam_api64.so` (copied from `linux64/libsteam_api.so`)
+ * `steam_api.dll` (copied from `steam_api.dll`)
+ * `steam_api64.dll` (copied from `steam_api64.dll`)
 
 ## Resources
 
