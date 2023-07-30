@@ -41,6 +41,10 @@ import (
 //   return ((bool (*)(void*, bool))(f))((void*)arg0, (bool)arg1);
 // }
 //
+// static uint8_t callFunc_Bool_Ptr_Int32_Int32_Int32_Int32_Int32(uintptr_t f, uintptr_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5) {
+//   return ((bool (*)(void*, int32_t, int32_t, int32_t, int32_t, int32_t))(f))((void*)arg0, arg1, arg2, arg3, arg4, arg5);
+// }
+//
 // static uint8_t callFunc_Bool_Ptr_Ptr(uintptr_t f, uintptr_t arg0, uintptr_t arg1) {
 //   return ((bool (*)(void*, void*))(f))((void*)arg0, (void*)arg1);
 // }
@@ -109,6 +113,7 @@ const (
 	funcType_Bool funcType = iota
 	funcType_Bool_Ptr
 	funcType_Bool_Ptr_Bool
+	funcType_Bool_Ptr_Int32_Int32_Int32_Int32_Int32
 	funcType_Bool_Ptr_Ptr
 	funcType_Bool_Ptr_Ptr_Ptr
 	funcType_Bool_Ptr_Ptr_Ptr_Int32
@@ -145,6 +150,8 @@ func (l *lib) call(ftype funcType, name string, args ...uintptr) (C.uint64_t, er
 		return C.uint64_t(C.callFunc_Bool_Ptr(f, C.uintptr_t(args[0]))), nil
 	case funcType_Bool_Ptr_Bool:
 		return C.uint64_t(C.callFunc_Bool_Ptr_Bool(f, C.uintptr_t(args[0]), C.uint8_t(args[1]))), nil
+	case funcType_Bool_Ptr_Int32_Int32_Int32_Int32_Int32:
+		return C.uint64_t(C.callFunc_Bool_Ptr_Int32_Int32_Int32_Int32_Int32(f, C.uintptr_t(args[0]), C.int32_t(args[1]), C.int32_t(args[2]), C.int32_t(args[3]), C.int32_t(args[4]), C.int32_t(args[5]))), nil
 	case funcType_Bool_Ptr_Ptr:
 		return C.uint64_t(C.callFunc_Bool_Ptr_Ptr(f, C.uintptr_t(args[0]), C.uintptr_t(args[1]))), nil
 	case funcType_Bool_Ptr_Ptr_Ptr:
@@ -472,6 +479,14 @@ type steamUtils C.uintptr_t
 
 func (s steamUtils) IsSteamRunningOnSteamDeck() bool {
 	v, err := theLib.call(funcType_Bool_Ptr, flatAPI_ISteamUtils_IsSteamRunningOnSteamDeck, uintptr(s))
+	if err != nil {
+		panic(err)
+	}
+	return byte(v) != 0
+}
+
+func (s steamUtils) ShowFloatingGamepadTextInput(keyboardMode EFloatingGamepadTextInputMode, textFieldXPosition, textFieldYPosition, textFieldWidth, textFieldHeight int32) bool {
+	v, err := theLib.call(funcType_Bool_Ptr_Int32_Int32_Int32_Int32_Int32, flatAPI_ISteamUtils_ShowFloatingGamepadTextInput, uintptr(s), uintptr(keyboardMode), uintptr(textFieldXPosition), uintptr(textFieldYPosition), uintptr(textFieldWidth), uintptr(textFieldHeight))
 	if err != nil {
 		panic(err)
 	}

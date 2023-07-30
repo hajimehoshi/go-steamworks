@@ -35,6 +35,15 @@ const (
 	_STEAM_INPUT_MAX_COUNT = 16
 )
 
+type EFloatingGamepadTextInputMode int32
+
+const (
+	EFloatingGamepadTextInputMode_ModeSingleLine    EFloatingGamepadTextInputMode = 0
+	EFloatingGamepadTextInputMode_ModeMultipleLines EFloatingGamepadTextInputMode = 1
+	EFloatingGamepadTextInputMode_ModeEmail         EFloatingGamepadTextInputMode = 2
+	EFloatingGamepadTextInputMode_ModeNumeric       EFloatingGamepadTextInputMode = 3
+)
+
 type ISteamApps interface {
 	GetAppInstallDir(appID AppId_t) string
 	GetCurrentGameLanguage() string
@@ -68,6 +77,7 @@ type ISteamUserStats interface {
 
 type ISteamUtils interface {
 	IsSteamRunningOnSteamDeck() bool
+	ShowFloatingGamepadTextInput(keyboardMode EFloatingGamepadTextInputMode, textFieldXPosition, textFieldYPosition, textFieldWidth, textFieldHeight int32) bool
 }
 
 const (
@@ -101,6 +111,7 @@ const (
 	flatAPI_ISteamUserStats_ClearAchievement    = "SteamAPI_ISteamUserStats_ClearAchievement"
 	flatAPI_ISteamUserStats_StoreStats          = "SteamAPI_ISteamUserStats_StoreStats"
 
-	flatAPI_SteamUtils                            = "SteamAPI_SteamUtils_v010"
-	flatAPI_ISteamUtils_IsSteamRunningOnSteamDeck = "SteamAPI_ISteamUtils_IsSteamRunningOnSteamDeck"
+	flatAPI_SteamUtils                               = "SteamAPI_SteamUtils_v010"
+	flatAPI_ISteamUtils_IsSteamRunningOnSteamDeck    = "SteamAPI_ISteamUtils_IsSteamRunningOnSteamDeck"
+	flatAPI_ISteamUtils_ShowFloatingGamepadTextInput = "SteamAPI_ISteamUtils_ShowFloatingGamepadTextInput"
 )
