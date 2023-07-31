@@ -327,3 +327,11 @@ func (s steamUtils) IsSteamRunningOnSteamDeck() bool {
 
 	return byte(v) != 0
 }
+
+func (s steamUtils) ShowFloatingGamepadTextInput(keyboardMode EFloatingGamepadTextInputMode, textFieldXPosition, textFieldYPosition, textFieldWidth, textFieldHeight int32) bool {
+	v, err := theDLL.call(flatAPI_ISteamUtils_ShowFloatingGamepadTextInput, uintptr(s), uintptr(keyboardMode), uintptr(textFieldXPosition), uintptr(textFieldYPosition), uintptr(textFieldWidth), uintptr(textFieldHeight))
+	if err != nil {
+		panic(err)
+	}
+	return byte(v) != 0
+}
