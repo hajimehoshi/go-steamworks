@@ -80,6 +80,10 @@ type ISteamUtils interface {
 	ShowFloatingGamepadTextInput(keyboardMode EFloatingGamepadTextInputMode, textFieldXPosition, textFieldYPosition, textFieldWidth, textFieldHeight int32) bool
 }
 
+type ISteamFriends interface {
+	GetPersonaName() string
+}
+
 const (
 	flatAPI_RestartAppIfNecessary = "SteamAPI_RestartAppIfNecessary"
 	flatAPI_Init                  = "SteamAPI_Init"
@@ -88,6 +92,9 @@ const (
 	flatAPI_SteamApps                         = "SteamAPI_SteamApps_v008"
 	flatAPI_ISteamApps_GetAppInstallDir       = "SteamAPI_ISteamApps_GetAppInstallDir"
 	flatAPI_ISteamApps_GetCurrentGameLanguage = "SteamAPI_ISteamApps_GetCurrentGameLanguage"
+
+	flagAPI_SteamFriends                 = "SteamAPI_SteamFriends_v017"
+	flatAPI_ISteamFriends_GetPersonaName = "SteamAPI_ISteamFriends_GetPersonaName"
 
 	flatAPI_SteamInput                          = "SteamAPI_SteamInput_v006"
 	flatAPI_ISteamInput_GetConnectedControllers = "SteamAPI_ISteamInput_GetConnectedControllers"

@@ -281,6 +281,24 @@ func (s steamApps) GetCurrentGameLanguage() string {
 	return C.GoString(C.uintptrToChar(C.uintptr_t(v)))
 }
 
+func SteamFriends() ISteamFriends {
+	v, err := theLib.call(funcType_Ptr, flagAPI_SteamFriends)
+	if err != nil {
+		panic(err)
+	}
+	return steamFriends(v)
+}
+
+type steamFriends C.uintptr_t
+
+func (s steamFriends) GetPersonaName() string {
+	v, err := theLib.call(funcType_Ptr_Ptr, flatAPI_ISteamFriends_GetPersonaName, uintptr(s))
+	if err != nil {
+		panic(err)
+	}
+	return C.GoString(C.uintptrToChar(C.uintptr_t(v)))
+}
+
 func SteamInput() ISteamInput {
 	v, err := theLib.call(funcType_Ptr, flatAPI_SteamInput)
 	if err != nil {
