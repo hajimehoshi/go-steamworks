@@ -12,6 +12,19 @@ import (
 
 const is32Bit = unsafe.Sizeof(int(0)) == 4
 
+func cStringToGoString(v uintptr, sizeHint int) string {
+	bs := make([]byte, 0, sizeHint)
+	for i := int32(0); ; i++ {
+		b := *(*byte)(unsafe.Pointer(v))
+		v += unsafe.Sizeof(byte(0))
+		if b == 0 {
+			break
+		}
+		bs = append(bs, b)
+	}
+	return string(bs)
+}
+
 type dll struct {
 	d     *windows.LazyDLL
 	procs map[string]*windows.LazyProc
@@ -104,17 +117,25 @@ func (s steamApps) GetCurrentGameLanguage() string {
 	if err != nil {
 		panic(err)
 	}
+	return cStringToGoString(v, 256)
+}
 
-	bs := make([]byte, 0, 256)
-	for i := int32(0); ; i++ {
-		b := *(*byte)(unsafe.Pointer(v))
-		v += unsafe.Sizeof(byte(0))
-		if b == 0 {
-			break
-		}
-		bs = append(bs, b)
+func SteamFriends() ISteamFriends {
+	v, err := theDLL.call(flagAPI_SteamFriends)
+	if err != nil {
+		panic(err)
 	}
-	return string(bs)
+	return steamFriends(v)
+}
+
+type steamFriends uintptr
+
+func (s steamFriends) GetPersonaName() string {
+	v, err := theDLL.call(flatAPI_ISteamFriends_GetPersonaName, uintptr(s))
+	if err != nil {
+		panic(err)
+	}
+	return cStringToGoString(v, 64)
 }
 
 func SteamInput() ISteamInput {
