@@ -288,7 +288,7 @@ func (s steamUserStats) GetAchievement(name string) (achieved, success bool) {
 	cname := append([]byte(name), 0)
 	defer runtime.KeepAlive(cname)
 
-	v, err := theDLL.call(flatAPI_ISteamUserStats_SetAchievement, uintptr(s), uintptr(unsafe.Pointer(&cname[0])), uintptr(unsafe.Pointer(&achieved)))
+	v, err := theDLL.call(flatAPI_ISteamUserStats_GetAchievement, uintptr(s), uintptr(unsafe.Pointer(&cname[0])), uintptr(unsafe.Pointer(&achieved)))
 	if err != nil {
 		panic(err)
 	}
