@@ -241,9 +241,13 @@ func RestartAppIfNecessary(appID uint32) bool {
 }
 
 func Init() bool {
-	v, err := theLib.call(funcType_Bool, flatAPI_Init)
+	v, err := theLib.call(funcType_Bool, flatAPI_InitSafe)
 	if err != nil {
-		panic(err)
+		// If InitSafe() doesn't work for some reason, fallback to Init()
+		v, err = theLib.call(funcType_Bool, flatAPI_Init)
+		if err != nil {
+			panic(err)
+		}
 	}
 	return byte(v) != 0
 }
