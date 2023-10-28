@@ -3,6 +3,9 @@
 
 package steamworks
 
+// #include <stdlib.h>
+import "C"
+
 import (
 	"runtime"
 	"unsafe"
@@ -140,6 +143,20 @@ func (s steamFriends) GetPersonaName() string {
 		panic(err)
 	}
 	return cStringToGoString(v, 64)
+}
+
+func (s steamFriends) SetRichPresence(key, value string) {
+	keyString := C.CString(key)
+	valueString := C.CString(value)
+	defer func() {
+		C.free(unsafe.Pointer(keyString))
+		C.free(unsafe.Pointer(valueString))
+	}()
+
+	_, err := theDLL.call(flatAPI_ISteamFriends_SetRichPresence, uintptr(s), uintptr(unsafe.Pointer(keyString)), uintptr(unsafe.Pointer(valueString)))
+	if err != nil {
+		panic(err)
+	}
 }
 
 func SteamInput() ISteamInput {
