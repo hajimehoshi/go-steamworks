@@ -3,9 +3,6 @@
 
 package steamworks
 
-// #include <stdlib.h>
-import "C"
-
 import (
 	"runtime"
 	"unsafe"
@@ -145,18 +142,17 @@ func (s steamFriends) GetPersonaName() string {
 	return cStringToGoString(v, 64)
 }
 
-func (s steamFriends) SetRichPresence(key, value string) {
-	keyString := C.CString(key)
-	valueString := C.CString(value)
-	defer func() {
-		C.free(unsafe.Pointer(keyString))
-		C.free(unsafe.Pointer(valueString))
-	}()
+func (s steamFriends) SetRichPresence(key, value string) bool {
+	ckey := append([]byte(key), 0)
+	defer runtime.KeepAlive(ckey)
+	cvalue := append([]byte(value), 0)
+	defer runtime.KeepAlive(cvalue)
 
-	_, err := theDLL.call(flatAPI_ISteamFriends_SetRichPresence, uintptr(s), uintptr(unsafe.Pointer(keyString)), uintptr(unsafe.Pointer(valueString)))
+	v, err := theDLL.call(flatAPI_ISteamFriends_SetRichPresence, uintptr(s), uintptr(unsafe.Pointer(&ckey[0])), uintptr(unsafe.Pointer(&cvalue[0])))
 	if err != nil {
 		panic(err)
 	}
+	return byte(v) != 0
 }
 
 func SteamInput() ISteamInput {

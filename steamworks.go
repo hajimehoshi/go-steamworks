@@ -82,7 +82,7 @@ type ISteamUtils interface {
 
 type ISteamFriends interface {
 	GetPersonaName() string
-	SetRichPresence(string, string)
+	SetRichPresence(string, string) bool
 }
 
 const (
