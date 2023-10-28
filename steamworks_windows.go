@@ -80,9 +80,13 @@ func RestartAppIfNecessary(appID uint32) bool {
 }
 
 func Init() bool {
-	v, err := theDLL.call(flatAPI_Init)
+	v, err := theDLL.call(flatAPI_InitSafe)
 	if err != nil {
-		panic(err)
+		// If InitSafe() doesn't work for some reason, fallback to Init()
+		v, err = theDLL.call(flatAPI_Init)
+		if err != nil {
+			panic(err)
+		}
 	}
 	return byte(v) != 0
 }
