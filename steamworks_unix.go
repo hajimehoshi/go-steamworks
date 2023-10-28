@@ -309,7 +309,7 @@ func (s steamFriends) SetRichPresence(key, value string) bool {
 	cvalue := append([]byte(value), 0)
 	defer runtime.KeepAlive(cvalue)
 
-	v, err := theLib.call(funcType_Bool_Ptr_Ptr_Ptr, flatAPI_ISteamFriends_SetRichPresence, uintptr(s), uintptr(unsafe.Pointer(ckey)), uintptr(unsafe.Pointer(cvalue)))
+	v, err := theLib.call(funcType_Bool_Ptr_Ptr_Ptr, flatAPI_ISteamFriends_SetRichPresence, uintptr(s), uintptr(unsafe.Pointer(&ckey[0])), uintptr(unsafe.Pointer(&cvalue[0])))
 	if err != nil {
 		panic(err)
 	}
