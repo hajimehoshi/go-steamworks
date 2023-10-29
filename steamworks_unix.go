@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-FileCopyrightText: 2021 The go-steamworks Authors
 
-//go:build !windows !android !ios
+//go:build (!windows && !android && !ios)
 
 package steamworks
 
