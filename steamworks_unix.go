@@ -304,12 +304,12 @@ func (s steamFriends) GetPersonaName() string {
 }
 
 func (s steamFriends) SetRichPresence(key, value string) bool {
-	ckey := append([]byte(key), 0)
-	defer runtime.KeepAlive(ckey)
-	cvalue := append([]byte(value), 0)
-	defer runtime.KeepAlive(cvalue)
+	ckey := C.CString(name)
+	defer C.free(unsafe.Pointer(ckey))
+	cvalue := C.CString(value)
+	defer C.free(unsafe.Pointer(cvalue))
 
-	v, err := theLib.call(funcType_Bool_Ptr_Ptr_Ptr, flatAPI_ISteamFriends_SetRichPresence, uintptr(s), uintptr(unsafe.Pointer(&ckey[0])), uintptr(unsafe.Pointer(&cvalue[0])))
+	v, err := theLib.call(funcType_Bool_Ptr_Ptr_Ptr, flatAPI_ISteamFriends_SetRichPresence, uintptr(s), uintptr(unsafe.Pointer(ckey)), uintptr(unsafe.Pointer(cvalue)))
 	if err != nil {
 		panic(err)
 	}
