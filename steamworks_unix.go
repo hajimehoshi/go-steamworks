@@ -304,7 +304,7 @@ func (s steamFriends) GetPersonaName() string {
 }
 
 func (s steamFriends) SetRichPresence(key, value string) bool {
-	ckey := C.CString(name)
+	ckey := C.CString(key)
 	defer C.free(unsafe.Pointer(ckey))
 	cvalue := C.CString(value)
 	defer C.free(unsafe.Pointer(cvalue))
