@@ -303,6 +303,20 @@ func (s steamFriends) GetPersonaName() string {
 	return C.GoString(C.uintptrToChar(C.uintptr_t(v)))
 }
 
+func (s steamFriends) SetRichPresence(key, value string) bool {
+	ckey := C.CString(key)
+	defer C.free(unsafe.Pointer(ckey))
+	cvalue := C.CString(value)
+	defer C.free(unsafe.Pointer(cvalue))
+
+	v, err := theLib.call(funcType_Bool_Ptr_Ptr_Ptr, flatAPI_ISteamFriends_SetRichPresence, uintptr(s), uintptr(unsafe.Pointer(ckey)), uintptr(unsafe.Pointer(cvalue)))
+	if err != nil {
+		panic(err)
+	}
+
+	return byte(v) != 0
+}
+
 func SteamInput() ISteamInput {
 	v, err := theLib.call(funcType_Ptr, flatAPI_SteamInput)
 	if err != nil {
