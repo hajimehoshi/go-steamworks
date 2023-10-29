@@ -2,6 +2,8 @@
 // SPDX-FileCopyrightText: 2021 The go-steamworks Authors
 
 //go:build !windows
+//go:build !android
+//go:build !ios
 
 package steamworks
 
