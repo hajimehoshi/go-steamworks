@@ -9,6 +9,15 @@ type AppId_t uint32
 type CSteamID uint64
 type InputHandle_t uint64
 
+type ESteamAPIInitResult int32
+
+const (
+	ESteamAPIInitResult_OK              ESteamAPIInitResult = 0
+	ESteamAPIInitResult_FailedGeneric   ESteamAPIInitResult = 1
+	ESteamAPIInitResult_NoSteamClient   ESteamAPIInitResult = 2
+	ESteamAPIInitResult_VersionMismatch ESteamAPIInitResult = 3
+)
+
 type ESteamInputType int32
 
 const (
@@ -87,8 +96,7 @@ type ISteamFriends interface {
 
 const (
 	flatAPI_RestartAppIfNecessary = "SteamAPI_RestartAppIfNecessary"
-	flatAPI_Init                  = "SteamAPI_Init"
-	flatAPI_InitSafe              = "SteamAPI_InitSafe"
+	flatAPI_InitFlat              = "SteamAPI_InitFlat"
 	flatAPI_RunCallbacks          = "SteamAPI_RunCallbacks"
 
 	flatAPI_SteamApps                         = "SteamAPI_SteamApps_v008"
@@ -111,7 +119,7 @@ const (
 	flatAPI_ISteamRemoteStorage_FileDelete  = "SteamAPI_ISteamRemoteStorage_FileDelete"
 	flatAPI_ISteamRemoteStorage_GetFileSize = "SteamAPI_ISteamRemoteStorage_GetFileSize"
 
-	flatAPI_SteamUser             = "SteamAPI_SteamUser_v021"
+	flatAPI_SteamUser             = "SteamAPI_SteamUser_v023"
 	flatAPI_ISteamUser_GetSteamID = "SteamAPI_ISteamUser_GetSteamID"
 
 	flatAPI_SteamUserStats                      = "SteamAPI_SteamUserStats_v012"
@@ -125,3 +133,14 @@ const (
 	flatAPI_ISteamUtils_IsSteamRunningOnSteamDeck    = "SteamAPI_ISteamUtils_IsSteamRunningOnSteamDeck"
 	flatAPI_ISteamUtils_ShowFloatingGamepadTextInput = "SteamAPI_ISteamUtils_ShowFloatingGamepadTextInput"
 )
+
+type steamErrMsg [1024]byte
+
+func (s *steamErrMsg) String() string {
+	for i, b := range s {
+		if b == 0 {
+			return string(s[:i])
+		}
+	}
+	return ""
+}

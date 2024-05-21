@@ -240,16 +240,16 @@ func RestartAppIfNecessary(appID uint32) bool {
 	return byte(v) != 0
 }
 
-func Init() bool {
-	v, err := theLib.call(funcType_Bool, flatAPI_InitSafe)
+func Init() error {
+	var msg steamErrMsg
+	v, err := theLib.call(funcType_Bool_Ptr, flatAPI_InitFlat, uintptr(unsafe.Pointer(&msg)))
 	if err != nil {
-		// If InitSafe() doesn't work for some reason, fallback to Init()
-		v, err = theLib.call(funcType_Bool, flatAPI_Init)
-		if err != nil {
-			panic(err)
-		}
+		panic(err)
 	}
-	return byte(v) != 0
+	if ESteamAPIInitResult(v) != ESteamAPIInitResult_OK {
+		return fmt.Errorf("steamworks: InitFlat failed: %d, %s", ESteamAPIInitResult(v), msg.String())
+	}
+	return nil
 }
 
 func RunCallbacks() {
