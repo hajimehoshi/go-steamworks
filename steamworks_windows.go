@@ -108,6 +108,14 @@ func SteamApps() ISteamApps {
 
 type steamApps uintptr
 
+func (s steamApps) BIsDlcInstalled(appID AppId_t) bool {
+	v, err := theDLL.call(flatAPI_ISteamApps_BIsDlcInstalled, uintptr(s), uintptr(appID))
+	if err != nil {
+		panic(err)
+	}
+	return byte(v) != 0
+}
+
 func (s steamApps) GetAppInstallDir(appID AppId_t) string {
 	var path [4096]byte
 	v, err := theDLL.call(flatAPI_ISteamApps_GetAppInstallDir, uintptr(s), uintptr(appID), uintptr(unsafe.Pointer(&path[0])), uintptr(len(path)))
