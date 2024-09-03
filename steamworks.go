@@ -54,9 +54,11 @@ const (
 )
 
 type ISteamApps interface {
+	BGetDLCDataByIndex(iDLC int) (appID AppId_t, available bool, pchName string, success bool)
 	BIsDlcInstalled(appID AppId_t) bool
 	GetAppInstallDir(appID AppId_t) string
 	GetCurrentGameLanguage() string
+	GetDLCCount() int32
 }
 
 type ISteamInput interface {
@@ -126,7 +128,7 @@ const (
 	flatAPI_SteamUser             = "SteamAPI_SteamUser_v023"
 	flatAPI_ISteamUser_GetSteamID = "SteamAPI_ISteamUser_GetSteamID"
 
-	flatAPI_SteamUserStats                      = "SteamAPI_SteamUserStats_v012"
+	flatAPI_SteamUserStats                      = "SteamAPI_SteamUserStats_v013"
 	flatAPI_ISteamUserStats_RequestCurrentStats = "SteamAPI_ISteamUserStats_RequestCurrentStats"
 	flatAPI_ISteamUserStats_GetAchievement      = "SteamAPI_ISteamUserStats_GetAchievement"
 	flatAPI_ISteamUserStats_SetAchievement      = "SteamAPI_ISteamUserStats_SetAchievement"
