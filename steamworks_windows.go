@@ -133,6 +133,14 @@ func (s steamApps) GetCurrentGameLanguage() string {
 	return cStringToGoString(v, 256)
 }
 
+func (s steamApps) GetDLCCount() int32 {
+	v, err := theDLL.call(flatAPI_ISteamApps_GetDLCCount, uintptr(s))
+	if err != nil {
+		panic(err)
+	}
+	return int32(v)
+}
+
 func SteamFriends() ISteamFriends {
 	v, err := theDLL.call(flagAPI_SteamFriends)
 	if err != nil {
