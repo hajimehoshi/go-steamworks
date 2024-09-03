@@ -73,6 +73,10 @@ import (
 //   return ((int32_t (*)(void*, int32_t, void*, int32_t))(f))((void*)arg0, arg1, (void*)arg2, arg3);
 // }
 //
+// static int32_t callFunc_Int32_Ptr_Int32_Ptr_Ptr_Ptr_Int32(uintptr_t f, uintptr_t arg0, int32_t arg1, uintptr_t arg2, uintptr_t arg3, uintptr_t arg4, int32_t arg5) {
+//   return ((int32_t (*)(void*, int32_t, void*, void*, void*, int32_t))(f))((void*)arg0, arg1, (void*)arg2, (void*)arg3, (void*)arg4, arg5);
+// }
+//
 // static int32_t callFunc_Int32_Ptr_Int64(uintptr_t f, uintptr_t arg0, int64_t arg1) {
 //   return ((int32_t (*)(void*, int64_t))(f))((void*)arg0, arg1);
 // }
@@ -126,6 +130,7 @@ const (
 	funcType_Int32_Int64
 	funcType_Int32_Ptr
 	funcType_Int32_Ptr_Int32_Ptr_Int32
+	funcType_Int32_Ptr_Int32_Ptr_Ptr_Ptr_Int32
 	funcType_Int32_Ptr_Int64
 	funcType_Int32_Ptr_Ptr
 	funcType_Int32_Ptr_Ptr_Ptr_Int32
@@ -171,6 +176,8 @@ func (l *lib) call(ftype funcType, name string, args ...uintptr) (C.uint64_t, er
 		return C.uint64_t(C.callFunc_Int32_Ptr(f, C.uintptr_t(args[0]))), nil
 	case funcType_Int32_Ptr_Int32_Ptr_Int32:
 		return C.uint64_t(C.callFunc_Int32_Ptr_Int32_Ptr_Int32(f, C.uintptr_t(args[0]), C.int32_t(args[1]), C.uintptr_t(args[2]), C.int32_t(args[3]))), nil
+	case funcType_Int32_Ptr_Int32_Ptr_Ptr_Ptr_Int32:
+		return C.uint64_t(C.callFunc_Int32_Ptr_Int32_Ptr_Ptr_Ptr_Int32(f, C.uintptr_t(args[0]), C.int32_t(args[1]), C.uintptr_t(args[2]), C.uintptr_t(args[3]), C.uintptr_t(args[4]), C.int32_t(args[5]))), nil
 	case funcType_Int32_Ptr_Int64:
 		return C.uint64_t(C.callFunc_Int32_Ptr_Int64(f, C.uintptr_t(args[0]), C.int64_t(args[1]))), nil
 	case funcType_Int32_Ptr_Ptr:
@@ -274,6 +281,15 @@ func SteamApps() ISteamApps {
 }
 
 type steamApps C.uintptr_t
+
+func (s steamApps) BGetDLCDataByIndex(iDLC int) (appID AppId_t, available bool, pchName string, success bool) {
+	var name [4096]byte
+	v, err := theLib.call(funcType_Int32_Ptr_Int32_Ptr_Ptr_Ptr_Int32, flatAPI_ISteamApps_BGetDLCDataByIndex, uintptr(s), uintptr(iDLC), uintptr(unsafe.Pointer(&appID)), uintptr(unsafe.Pointer(&available)), uintptr(unsafe.Pointer(&name[0])), uintptr(len(name)))
+	if err != nil {
+		panic(err)
+	}
+	return appID, available, C.GoString((*C.char)(unsafe.Pointer(&name[0]))), byte(v) != 0
+}
 
 func (s steamApps) BIsDlcInstalled(appID AppId_t) bool {
 	v, err := theLib.call(funcType_Bool_Ptr_Int32, flatAPI_ISteamApps_BIsDlcInstalled, uintptr(s), uintptr(appID))

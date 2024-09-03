@@ -108,6 +108,15 @@ func SteamApps() ISteamApps {
 
 type steamApps uintptr
 
+func (s steamApps) BGetDLCDataByIndex(iDLC int) (appID AppId_t, available bool, pchName string, success bool) {
+	var name [4096]byte
+	v, err := theDLL.call(flatAPI_ISteamApps_BGetDLCDataByIndex, uintptr(s), uintptr(iDLC), uintptr(unsafe.Pointer(&appID)), uintptr(unsafe.Pointer(&available)), uintptr(unsafe.Pointer(&name[0])), uintptr(len(name)))
+	if err != nil {
+		panic(err)
+	}
+	return appID, available, cStringToGoString(v, len(name)), byte(v) != 0
+}
+
 func (s steamApps) BIsDlcInstalled(appID AppId_t) bool {
 	v, err := theDLL.call(flatAPI_ISteamApps_BIsDlcInstalled, uintptr(s), uintptr(appID))
 	if err != nil {
