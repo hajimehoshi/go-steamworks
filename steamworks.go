@@ -54,9 +54,11 @@ const (
 )
 
 type ISteamApps interface {
+	BGetDLCDataByIndex(iDLC int) (appID AppId_t, available bool, pchName string, success bool)
 	BIsDlcInstalled(appID AppId_t) bool
 	GetAppInstallDir(appID AppId_t) string
 	GetCurrentGameLanguage() string
+	GetDLCCount() int32
 }
 
 type ISteamInput interface {
