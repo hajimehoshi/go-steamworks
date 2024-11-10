@@ -1,4 +1,4 @@
-module github.com/hajimehoshi/go-steamworks
+module github.com/TaiJiYu/go-steamworks
 
 go 1.17
 
