@@ -134,6 +134,7 @@ type ISteamUserStats interface {
 	// Leaderboard
 	FindLeaderboard(leaderboardName string) SteamAPICall_t
 	FindOrCreateLeaderboard(leaderboardName string, sortMethod ELeaderboardSortMethod, displayType ELeaderboardDisplayType) SteamAPICall_t
+	GetLeaderboardName(leaderboard SteamLeaderboard_t) string
 	DownloadLeaderboardEntries(leaderboard SteamLeaderboard_t, dataRequest ELeaderboardDataRequest, rangeStart, rangeEnd int) SteamAPICall_t
 	DownloadLeaderboardEntriesForUsers(leaderboard SteamLeaderboard_t, prgUsers []CSteamID) SteamAPICall_t
 	GetDownloadedLeaderboardEntry(entries SteamLeaderboardEntries_t, index int, detailsMax int) (success bool, entry *LeaderboardEntry_t, details []int32)
@@ -143,6 +144,7 @@ type ISteamUserStats interface {
 type ISteamUtils interface {
 	IsSteamRunningOnSteamDeck() bool
 	ShowFloatingGamepadTextInput(keyboardMode EFloatingGamepadTextInputMode, textFieldXPosition, textFieldYPosition, textFieldWidth, textFieldHeight int32) bool
+	GetAPICallResult(apiCall SteamAPICall_t, callbackExpected int) (callback []byte, success bool)
 }
 
 type ISteamFriends interface {
@@ -181,14 +183,16 @@ const (
 	flatAPI_SteamUser             = "SteamAPI_SteamUser_v023"
 	flatAPI_ISteamUser_GetSteamID = "SteamAPI_ISteamUser_GetSteamID"
 
-	flatAPI_SteamUserStats                                     = "SteamAPI_SteamUserStats_v012"
-	flatAPI_ISteamUserStats_RequestCurrentStats                = "SteamAPI_ISteamUserStats_RequestCurrentStats"
-	flatAPI_ISteamUserStats_GetAchievement                     = "SteamAPI_ISteamUserStats_GetAchievement"
-	flatAPI_ISteamUserStats_SetAchievement                     = "SteamAPI_ISteamUserStats_SetAchievement"
-	flatAPI_ISteamUserStats_ClearAchievement                   = "SteamAPI_ISteamUserStats_ClearAchievement"
-	flatAPI_ISteamUserStats_StoreStats                         = "SteamAPI_ISteamUserStats_StoreStats"
-	flatAPI_ISteamUserStats_FindLeaderboard                    = "SteamAPI_ISteamUserStats_FindLeaderboard"
-	flatAPI_ISteamUserStats_FindOrCreateLeaderboard            = "SteamAPI_ISteamUserStats_FindOrCreateLeaderboard"
+	flatAPI_SteamUserStats                          = "SteamAPI_SteamUserStats_v012"
+	flatAPI_ISteamUserStats_RequestCurrentStats     = "SteamAPI_ISteamUserStats_RequestCurrentStats"
+	flatAPI_ISteamUserStats_GetAchievement          = "SteamAPI_ISteamUserStats_GetAchievement"
+	flatAPI_ISteamUserStats_SetAchievement          = "SteamAPI_ISteamUserStats_SetAchievement"
+	flatAPI_ISteamUserStats_ClearAchievement        = "SteamAPI_ISteamUserStats_ClearAchievement"
+	flatAPI_ISteamUserStats_StoreStats              = "SteamAPI_ISteamUserStats_StoreStats"
+	flatAPI_ISteamUserStats_FindLeaderboard         = "SteamAPI_ISteamUserStats_FindLeaderboard"
+	flatAPI_ISteamUserStats_FindOrCreateLeaderboard = "SteamAPI_ISteamUserStats_FindOrCreateLeaderboard"
+	flatAPI_ISteamUserStats_GetLeaderboardName      = "SteamAPI_ISteamUserStats_GetLeaderboardName"
+
 	flatAPI_ISteamUserStats_DownloadLeaderboardEntries         = "SteamAPI_ISteamUserStats_DownloadLeaderboardEntries"
 	flatAPI_ISteamUserStats_UploadLeaderboardScore             = "SteamAPI_ISteamUserStats_UploadLeaderboardScore"
 	flatAPI_ISteamUserStats_DownloadLeaderboardEntriesForUsers = "SteamAPI_ISteamUserStats_DownloadLeaderboardEntriesForUsers"
@@ -197,6 +201,7 @@ const (
 	flatAPI_SteamUtils                               = "SteamAPI_SteamUtils_v010"
 	flatAPI_ISteamUtils_IsSteamRunningOnSteamDeck    = "SteamAPI_ISteamUtils_IsSteamRunningOnSteamDeck"
 	flatAPI_ISteamUtils_ShowFloatingGamepadTextInput = "SteamAPI_ISteamUtils_ShowFloatingGamepadTextInput"
+	flatAPI_ISteamUtils_GetAPICallResult             = "SteamAPI_ISteamUtils_GetAPICallResult"
 )
 
 type steamErrMsg [1024]byte

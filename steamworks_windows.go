@@ -405,6 +405,13 @@ func (s steamUserStats) FindOrCreateLeaderboard(leaderboardName string, sortMeth
 
 	return SteamAPICall_t(v)
 }
+func (s steamUserStats) GetLeaderboardName(leaderboard SteamLeaderboard_t) string {
+	v, err := theDLL.call(flatAPI_ISteamUserStats_GetLeaderboardName, uintptr(s), uintptr(leaderboard))
+	if err != nil {
+		panic(err)
+	}
+	return cStringToGoString(v, 64)
+}
 
 func (s steamUserStats) DownloadLeaderboardEntries(leaderboard SteamLeaderboard_t, dataRequest ELeaderboardDataRequest, rangeStart, rangeEnd int) SteamAPICall_t {
 	v, err := theDLL.call(flatAPI_ISteamUserStats_DownloadLeaderboardEntries, uintptr(s), uintptr(leaderboard), uintptr(dataRequest), uintptr(rangeStart), uintptr(rangeEnd))
@@ -481,4 +488,14 @@ func (s steamUtils) ShowFloatingGamepadTextInput(keyboardMode EFloatingGamepadTe
 		panic(err)
 	}
 	return byte(v) != 0
+}
+
+func (s steamUtils) GetAPICallResult(apiCall SteamAPICall_t, callbackExpected int, callbaseSize int) (callback []byte, success bool, pbFailed bool) {
+	callback = make([]byte, callbaseSize)
+	v, err := theDLL.call(flatAPI_ISteamUtils_GetAPICallResult, uintptr(s), uintptr(apiCall), uintptr(unsafe.Pointer(&callback[0])), uintptr(callbaseSize), uintptr(callbackExpected), uintptr(unsafe.Pointer(&pbFailed)))
+	if err != nil {
+		panic(err)
+	}
+	success = byte(v) != 0
+	return
 }
