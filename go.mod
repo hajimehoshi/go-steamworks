@@ -1,5 +1,5 @@
-module github.com/hajimehoshi/go-steamworks
+module github.com/taijiyugame/go-steamworks
 
-go 1.17
+go 1.23.3
 
-require golang.org/x/sys v0.20.0
+require golang.org/x/sys v0.27.0
