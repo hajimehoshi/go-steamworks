@@ -144,7 +144,7 @@ type ISteamUserStats interface {
 type ISteamUtils interface {
 	IsSteamRunningOnSteamDeck() bool
 	ShowFloatingGamepadTextInput(keyboardMode EFloatingGamepadTextInputMode, textFieldXPosition, textFieldYPosition, textFieldWidth, textFieldHeight int32) bool
-	GetAPICallResult(apiCall SteamAPICall_t, callbackExpected int) (callback []byte, success bool)
+	GetAPICallResult(apiCall SteamAPICall_t, callbackExpected int, callbaseSize int) (callback []byte, success bool, pbFailed bool)
 }
 
 type ISteamFriends interface {
