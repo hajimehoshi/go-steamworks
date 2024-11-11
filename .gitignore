@@ -3,3 +3,6 @@ steamworks_sdk_*.zip
 .DS_Store
 *.dll
 *.txt
+steamsdk/
+.gitignore
+main.go

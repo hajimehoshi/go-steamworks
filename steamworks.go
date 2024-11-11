@@ -90,14 +90,6 @@ const (
 	ELeaderboardUploadScoreMethod_ForceUpdate ELeaderboardUploadScoreMethod = 2
 )
 
-type LeaderboardEntry_t struct {
-	SteamIDUser CSteamID
-	GlobalRank  int
-	Score       int
-	Details     int
-	UGC         UGCHandle_t
-}
-
 type ISteamApps interface {
 	BGetDLCDataByIndex(iDLC int) (appID AppId_t, available bool, pchName string, success bool)
 	BIsDlcInstalled(appID AppId_t) bool
@@ -132,19 +124,14 @@ type ISteamUserStats interface {
 	StoreStats() bool
 
 	// Leaderboard
-	FindLeaderboard(leaderboardName string) SteamAPICall_t
-	FindOrCreateLeaderboard(leaderboardName string, sortMethod ELeaderboardSortMethod, displayType ELeaderboardDisplayType) SteamAPICall_t
-	GetLeaderboardName(leaderboard SteamLeaderboard_t) string
-	DownloadLeaderboardEntries(leaderboard SteamLeaderboard_t, dataRequest ELeaderboardDataRequest, rangeStart, rangeEnd int) SteamAPICall_t
-	DownloadLeaderboardEntriesForUsers(leaderboard SteamLeaderboard_t, prgUsers []CSteamID) SteamAPICall_t
-	GetDownloadedLeaderboardEntry(entries SteamLeaderboardEntries_t, index int, detailsMax int) (success bool, entry *LeaderboardEntry_t, details []int32)
-	UploadLeaderboardScore(leaderboard SteamLeaderboard_t, uploadScoreMethod ELeaderboardUploadScoreMethod, score int32, scoreDetails ...int32) SteamAPICall_t
+	ReadLeadboard(leaderboardName string, dataRequest ELeaderboardDataRequest, rangeStart, rangeEnd int, successFunc DealLeaderboardFunc, timeoutFunc ReadTimeoutFunc, detailsMax int)
+	UploadLeaderboardScore(leaderboardName string, uploadScoreMethod ELeaderboardUploadScoreMethod, retFunc UploadRetFunc, timeoutFunc ReadTimeoutFunc, score int32, scoreDetails ...int32)
 }
 
 type ISteamUtils interface {
 	IsSteamRunningOnSteamDeck() bool
 	ShowFloatingGamepadTextInput(keyboardMode EFloatingGamepadTextInputMode, textFieldXPosition, textFieldYPosition, textFieldWidth, textFieldHeight int32) bool
-	GetAPICallResult(apiCall SteamAPICall_t, callbackExpected int, callbaseSize int) (callback []byte, success bool, pbFailed bool)
+	GetAPICallResult(apiCall SteamAPICall_t, callbackExpected iCallbackExpected, callbaseSize int) (callback []byte, success bool, pbFailed bool)
 }
 
 type ISteamFriends interface {
@@ -183,7 +170,7 @@ const (
 	flatAPI_SteamUser             = "SteamAPI_SteamUser_v023"
 	flatAPI_ISteamUser_GetSteamID = "SteamAPI_ISteamUser_GetSteamID"
 
-	flatAPI_SteamUserStats                          = "SteamAPI_SteamUserStats_v012"
+	flatAPI_SteamUserStats                          = "SteamAPI_SteamUserStats_v013"
 	flatAPI_ISteamUserStats_RequestCurrentStats     = "SteamAPI_ISteamUserStats_RequestCurrentStats"
 	flatAPI_ISteamUserStats_GetAchievement          = "SteamAPI_ISteamUserStats_GetAchievement"
 	flatAPI_ISteamUserStats_SetAchievement          = "SteamAPI_ISteamUserStats_SetAchievement"
