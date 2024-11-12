@@ -60,4 +60,3 @@ These binary files are copied from Steamworks SDK's `redistribution_bin` directo
 ## Resources
 
  * [Steamworks SDK](https://partner.steamgames.com/doc/sdk)
- * 
