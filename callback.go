@@ -65,6 +65,7 @@ func (c *callbackClient) setCallback(callbackArgs *CallbackArgs) {
 func (c *callbackClient) run() {
 	defer close(c.callbackArgsChan)
 	defer close(c.closeSignal)
+	defer c.intervalTimer.Stop()
 	for {
 		<-c.intervalTimer.C
 		select {
