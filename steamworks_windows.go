@@ -6,6 +6,7 @@ package steamworks
 import (
 	"fmt"
 	"runtime"
+	"time"
 	"unsafe"
 
 	"golang.org/x/sys/windows"
@@ -364,6 +365,127 @@ func (s steamUserStats) StoreStats() bool {
 	return byte(v) != 0
 }
 
+func (s steamUserStats) findLeaderboard(leaderboardName string) SteamAPICall_t {
+	cname := append([]byte(leaderboardName), 0)
+	defer runtime.KeepAlive(cname)
+	v, err := theDLL.call(flatAPI_ISteamUserStats_FindLeaderboard, uintptr(s), uintptr(unsafe.Pointer(&cname[0])))
+	if err != nil {
+		panic(err)
+	}
+
+	return SteamAPICall_t(v)
+}
+
+func (s steamUserStats) GetLeaderboardName(leaderboard SteamLeaderboard_t) string {
+	v, err := theDLL.call(flatAPI_ISteamUserStats_GetLeaderboardName, uintptr(s), uintptr(leaderboard))
+	if err != nil {
+		panic(err)
+	}
+	return cStringToGoString(v, 64)
+}
+
+func (s steamUserStats) downloadLeaderboardEntries(leaderboard SteamLeaderboard_t, dataRequest ELeaderboardDataRequest, rangeStart, rangeEnd int) SteamAPICall_t {
+	v, err := theDLL.call(flatAPI_ISteamUserStats_DownloadLeaderboardEntries, uintptr(s), uintptr(leaderboard), uintptr(dataRequest), uintptr(rangeStart), uintptr(rangeEnd))
+	if err != nil {
+		panic(err)
+	}
+
+	return SteamAPICall_t(v)
+}
+
+func (s steamUserStats) getDownloadedLeaderboardEntry(entries SteamLeaderboardEntries_t, index int, detailsMax int) (success bool, entry LeaderboardEntry_t, details []int32) {
+	details = make([]int32, detailsMax+1)
+	defer runtime.KeepAlive(details)
+	entryC := entry.CStruct()
+	v, err := theDLL.call(flatAPI_ISteamUserStats_GetDownloadedLeaderboardEntry, uintptr(s), uintptr(entries), uintptr(index), uintptr(unsafe.Pointer(&entryC)), uintptr(unsafe.Pointer(&details[0])), uintptr(detailsMax))
+	if err != nil {
+		panic(err)
+	}
+	entry = entry.FromCStruct(entryC)
+	details = details[:detailsMax]
+	success = byte(v) != 0
+	return
+}
+
+type DealLeaderboardFunc func(entry LeaderboardEntry_t, entryIndex int, entryCount int, details ...int32)
+type ReadTimeoutFunc func(readTime time.Time, readSpend time.Duration)
+
+func (s steamUserStats) ReadLeadboard(leaderboardName string, dataRequest ELeaderboardDataRequest, rangeStart, rangeEnd int, successFunc DealLeaderboardFunc, timeoutFunc ReadTimeoutFunc, detailsMax int) {
+	callbackAPI := s.findLeaderboard(leaderboardName)
+	defaultCallbackCli().setCallback(&CallbackArgs{
+		CallbackAPI:      callbackAPI,
+		CallbackExpected: iCallbackExpected_LeaderboardFindResult_t,
+		CallbaseSize:     int(LeaderboardFindResult_t{}.Size()),
+		SuccessFunc: func(ret []byte) {
+			data := LeaderboardFindResult_t{}.FromByte(ret)
+			downCall := s.downloadLeaderboardEntries(data.SteamLeaderboard, dataRequest, rangeStart, rangeEnd)
+			defaultCallbackCli().setCallback(&CallbackArgs{
+				CallbackAPI:      downCall,
+				CallbackExpected: iCallbackExpected_LeaderboardScoresDownloaded_t,
+				CallbaseSize:     int(LeaderboardScoresDownloaded_t{}.Size()),
+				SuccessFunc: func(ret []byte) {
+					l := LeaderboardScoresDownloaded_t{}.FromByte(ret)
+					steamLeaderboardEntries := l.SteamLeaderboardEntries
+					entryCount := l.EntryCount
+					if entryCount == 0 {
+						successFunc(LeaderboardEntry_t{}, -1, entryCount)
+						return
+					}
+					for i := 0; i < entryCount; i++ {
+						_, entry, details := s.getDownloadedLeaderboardEntry(steamLeaderboardEntries, i, detailsMax)
+						successFunc(entry, i, entryCount, details...)
+					}
+				},
+				TimeoutFunc: func(callbackTime time.Time, callbackSpend time.Duration) {
+					timeoutFunc(callbackTime, callbackSpend)
+				},
+			})
+		},
+		TimeoutFunc: func(callbackTime time.Time, callbackSpend time.Duration) {
+			timeoutFunc(callbackTime, callbackSpend)
+		},
+	})
+}
+
+func (s steamUserStats) uploadLeaderboardScore(leaderboard SteamLeaderboard_t, uploadScoreMethod ELeaderboardUploadScoreMethod, score int32, scoreDetails ...int32) SteamAPICall_t {
+	scoreDetails = append(scoreDetails, 0)
+	defer runtime.KeepAlive(scoreDetails)
+	v, err := theDLL.call(flatAPI_ISteamUserStats_UploadLeaderboardScore, uintptr(s), uintptr(leaderboard), uintptr(uploadScoreMethod), uintptr(score), uintptr(unsafe.Pointer(&scoreDetails[0])), uintptr(len(scoreDetails)-1))
+	if err != nil {
+		panic(err)
+	}
+
+	return SteamAPICall_t(v)
+}
+
+type UploadRetFunc func(ret LeaderboardScoreUploaded_t)
+
+func (s steamUserStats) UploadLeaderboardScore(leaderboardName string, uploadScoreMethod ELeaderboardUploadScoreMethod, retFunc UploadRetFunc, timeoutFunc ReadTimeoutFunc, score int32, scoreDetails ...int32) {
+	callbackAPI := s.findLeaderboard(leaderboardName)
+	defaultCallbackCli().setCallback(&CallbackArgs{
+		CallbackAPI:      callbackAPI,
+		CallbackExpected: iCallbackExpected_LeaderboardFindResult_t,
+		CallbaseSize:     int(LeaderboardFindResult_t{}.Size()),
+		SuccessFunc: func(ret []byte) {
+			data := LeaderboardFindResult_t{}.FromByte(ret)
+			uploadCall := s.uploadLeaderboardScore(data.SteamLeaderboard, uploadScoreMethod, score, scoreDetails...)
+			defaultCallbackCli().setCallback(&CallbackArgs{
+				CallbackAPI:      uploadCall,
+				CallbackExpected: iCallbackExpected_LeaderboardScoreUploaded_t,
+				CallbaseSize:     int(LeaderboardScoreUploaded_t{}.Size()),
+				SuccessFunc: func(ret []byte) {
+					retFunc(LeaderboardScoreUploaded_t{}.FromByte(ret))
+				},
+				TimeoutFunc: func(callbackTime time.Time, callbackSpend time.Duration) {
+					timeoutFunc(callbackTime, callbackSpend)
+				},
+			})
+		},
+		TimeoutFunc: func(callbackTime time.Time, callbackSpend time.Duration) {
+			timeoutFunc(callbackTime, callbackSpend)
+		},
+	})
+}
 func SteamUtils() ISteamUtils {
 	v, err := theDLL.call(flatAPI_SteamUtils)
 	if err != nil {
@@ -389,4 +511,14 @@ func (s steamUtils) ShowFloatingGamepadTextInput(keyboardMode EFloatingGamepadTe
 		panic(err)
 	}
 	return byte(v) != 0
+}
+
+func (s steamUtils) GetAPICallResult(apiCall SteamAPICall_t, callbackExpected iCallbackExpected, callbaseSize int) (callback []byte, success bool, pbFailed bool) {
+	callback = make([]byte, callbaseSize)
+	v, err := theDLL.call(flatAPI_ISteamUtils_GetAPICallResult, uintptr(s), uintptr(apiCall), uintptr(unsafe.Pointer(&callback[0])), uintptr(callbaseSize), uintptr(callbackExpected), uintptr(unsafe.Pointer(&pbFailed)))
+	if err != nil {
+		panic(err)
+	}
+	success = byte(v) != 0
+	return
 }

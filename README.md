@@ -45,6 +45,27 @@ func SystemLang() language.Tag {
 	}
 	return language.Und
 }
+
+func Leaderboards(){
+	successFunc := func(entry LeaderboardEntry_t, entryIndex, entryCount int, details ...int32) {
+		if entryCount == 0 {
+			fmt.Println("no entry")
+		} else {
+			fmt.Printf("entry:%+v\n", entry)
+		}
+	}
+	timeoutFunc := func(readTime time.Time, readSpend time.Duration) {
+		fmt.Println("read leaderbord timeout,spend time:", readSpend)
+	}
+	// read leadboard info
+	SteamUserStats().ReadLeadboard("your leadboard name", ELeaderboardDataRequestGlobal, 0, 10, successFunc, timeoutFunc, 0)
+
+	uploadRetFunc := func(ret LeaderboardScoreUploaded_t) {
+		fmt.Printf("%+v\n", ret)
+	}
+	// upload leadboard
+	SteamUserStats().UploadLeaderboardScore("your leadboard name", ELeaderboardUploadScoreMethod_KeepBest, uploadRetFunc, timeoutFunc, 50)
+}
 ```
 
 ## License
