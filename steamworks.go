@@ -80,7 +80,6 @@ type ISteamUser interface {
 }
 
 type ISteamUserStats interface {
-	RequestCurrentStats() bool
 	GetAchievement(name string) (achieved, success bool)
 	SetAchievement(name string) bool
 	ClearAchievement(name string) bool
