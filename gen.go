@@ -60,7 +60,7 @@ func processZip(dir string) error {
 		"sdk/redistributable_bin/osx/libsteam_api.dylib":  "libsteam_api.dylib",
 
 		// Do not include the Windows DLLs so far.
-		// Unlike macOS and Linux, this library is not self-contained for Windows and requries Windows DLLs.
+		// Unlike macOS and Linux, this library is not self-contained for Windows and requries Windows DLLs for each game.
 		// "sdk/redistributable_bin/steam_api.dll":           "steam_api.dll",
 		// "sdk/redistributable_bin/win64/steam_api64.dll":   "steam_api64.dll",
 	} {
