@@ -6,7 +6,7 @@ A Steamworks SDK binding for Go
 
 ## Steamworks SDK version
 
-159
+161
 
 ## How to use
 
