@@ -58,8 +58,11 @@ func processZip(dir string) error {
 		"sdk/redistributable_bin/linux32/libsteam_api.so": "libsteam_api.so",
 		"sdk/redistributable_bin/linux64/libsteam_api.so": "libsteam_api64.so",
 		"sdk/redistributable_bin/osx/libsteam_api.dylib":  "libsteam_api.dylib",
-		"sdk/redistributable_bin/steam_api.dll":           "steam_api.dll",
-		"sdk/redistributable_bin/win64/steam_api64.dll":   "steam_api64.dll",
+
+		// Do not include the Windows DLLs so far.
+		// Unlike macOS and Linux, this library is not self-contained for Windows and requries Windows DLLs.
+		// "sdk/redistributable_bin/steam_api.dll":           "steam_api.dll",
+		// "sdk/redistributable_bin/win64/steam_api64.dll":   "steam_api64.dll",
 	} {
 		f, err := r.Open(path)
 		if err != nil {
