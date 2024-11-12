@@ -487,15 +487,6 @@ func SteamUserStats() ISteamUserStats {
 
 type steamUserStats C.uintptr_t
 
-func (s steamUserStats) RequestCurrentStats() bool {
-	v, err := theLib.call(funcType_Bool_Ptr, flatAPI_ISteamUserStats_RequestCurrentStats, uintptr(s))
-	if err != nil {
-		panic(err)
-	}
-
-	return byte(v) != 0
-}
-
 func (s steamUserStats) GetAchievement(name string) (achieved, success bool) {
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))

@@ -127,12 +127,11 @@ const (
 	flatAPI_SteamUser             = "SteamAPI_SteamUser_v023"
 	flatAPI_ISteamUser_GetSteamID = "SteamAPI_ISteamUser_GetSteamID"
 
-	flatAPI_SteamUserStats                      = "SteamAPI_SteamUserStats_v013"
-	flatAPI_ISteamUserStats_RequestCurrentStats = "SteamAPI_ISteamUserStats_RequestCurrentStats"
-	flatAPI_ISteamUserStats_GetAchievement      = "SteamAPI_ISteamUserStats_GetAchievement"
-	flatAPI_ISteamUserStats_SetAchievement      = "SteamAPI_ISteamUserStats_SetAchievement"
-	flatAPI_ISteamUserStats_ClearAchievement    = "SteamAPI_ISteamUserStats_ClearAchievement"
-	flatAPI_ISteamUserStats_StoreStats          = "SteamAPI_ISteamUserStats_StoreStats"
+	flatAPI_SteamUserStats                   = "SteamAPI_SteamUserStats_v013"
+	flatAPI_ISteamUserStats_GetAchievement   = "SteamAPI_ISteamUserStats_GetAchievement"
+	flatAPI_ISteamUserStats_SetAchievement   = "SteamAPI_ISteamUserStats_SetAchievement"
+	flatAPI_ISteamUserStats_ClearAchievement = "SteamAPI_ISteamUserStats_ClearAchievement"
+	flatAPI_ISteamUserStats_StoreStats       = "SteamAPI_ISteamUserStats_StoreStats"
 
 	flatAPI_SteamUtils                               = "SteamAPI_SteamUtils_v010"
 	flatAPI_ISteamUtils_IsSteamRunningOnSteamDeck    = "SteamAPI_ISteamUtils_IsSteamRunningOnSteamDeck"
