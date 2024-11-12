@@ -318,6 +318,7 @@ func SteamUserStats() ISteamUserStats {
 
 type steamUserStats uintptr
 
+// Deprecated: RequestCurrentStats is no longer necessary and has been removed. The Steam Client will synchronize this data before your game launches.
 func (s steamUserStats) RequestCurrentStats() bool {
 	v, err := theDLL.call(flatAPI_ISteamUserStats_RequestCurrentStats, uintptr(s))
 	if err != nil {
