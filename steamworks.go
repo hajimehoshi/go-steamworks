@@ -87,9 +87,16 @@ type ISteamUserStats interface {
 }
 
 type ISteamUtils interface {
+	BOverlayNeedsPresent() bool
+	InitFilterText() bool
+	IsOverlayEnabled() bool
+	IsSteamChinaLauncher() bool
+	IsSteamInBigPictureMode() bool
+	IsSteamRunningInVR() bool
 	IsSteamRunningOnSteamDeck() bool
-	ShowFloatingGamepadTextInput(keyboardMode EFloatingGamepadTextInputMode, textFieldXPosition, textFieldYPosition, textFieldWidth, textFieldHeight int32) bool
+	IsVRHeadsetStreamingEnabled() bool
 	SetWarningMessageHook(hook func(severity int, debugText string))
+	ShowFloatingGamepadTextInput(keyboardMode EFloatingGamepadTextInputMode, textFieldXPosition, textFieldYPosition, textFieldWidth, textFieldHeight int32) bool
 }
 
 type ISteamFriends interface {
@@ -135,9 +142,16 @@ const (
 	flatAPI_ISteamUserStats_StoreStats       = "SteamAPI_ISteamUserStats_StoreStats"
 
 	flatAPI_SteamUtils                               = "SteamAPI_SteamUtils_v010"
+	flatAPI_ISteamUtils_BOverlayNeedsPresent         = "SteamAPI_ISteamUtils_BOverlayNeedsPresent"
+	flatAPI_ISteamUtils_InitFilterText               = "SteamAPI_ISteamUtils_InitFilterText"
+	flatAPI_ISteamUtils_IsOverlayEnabled             = "SteamAPI_ISteamUtils_IsOverlayEnabled"
+	flatAPI_ISteamUtils_IsSteamChinaLauncher         = "SteamAPI_ISteamUtils_IsSteamChinaLauncher"
+	flatAPI_ISteamUtils_IsSteamInBigPictureMode      = "SteamAPI_ISteamUtils_IsSteamInBigPictureMode"
+	flatAPI_ISteamUtils_IsSteamRunningInVR           = "SteamAPI_ISteamUtils_IsSteamRunningInVR"
 	flatAPI_ISteamUtils_IsSteamRunningOnSteamDeck    = "SteamAPI_ISteamUtils_IsSteamRunningOnSteamDeck"
-	flatAPI_ISteamUtils_ShowFloatingGamepadTextInput = "SteamAPI_ISteamUtils_ShowFloatingGamepadTextInput"
+	flatAPI_ISteamUtils_IsVRHeadsetStreamingEnabled  = "SteamAPI_ISteamUtils_IsVRHeadsetStreamingEnabled"
 	flatAPI_ISteamUtils_SetWarningMessageHook        = "SteamAPI_ISteamUtils_SetWarningMessageHook"
+	flatAPI_ISteamUtils_ShowFloatingGamepadTextInput = "SteamAPI_ISteamUtils_ShowFloatingGamepadTextInput"
 )
 
 type steamErrMsg [1024]byte

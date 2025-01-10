@@ -551,6 +551,54 @@ func SteamUtils() ISteamUtils {
 
 type steamUtils C.uintptr_t
 
+func (s steamUtils) BOverlayNeedsPresent() bool {
+	v, err := theLib.call(funcType_Bool_Ptr, flatAPI_ISteamUtils_BOverlayNeedsPresent, uintptr(s))
+	if err != nil {
+		panic(err)
+	}
+	return byte(v) != 0
+}
+
+func (s steamUtils) InitFilterText() bool {
+	v, err := theLib.call(funcType_Bool_Ptr, flatAPI_ISteamUtils_InitFilterText, uintptr(s))
+	if err != nil {
+		panic(err)
+	}
+	return byte(v) != 0
+}
+
+func (s steamUtils) IsOverlayEnabled() bool {
+	v, err := theLib.call(funcType_Bool_Ptr, flatAPI_ISteamUtils_IsOverlayEnabled, uintptr(s))
+	if err != nil {
+		panic(err)
+	}
+	return byte(v) != 0
+}
+
+func (s steamUtils) IsSteamChinaLauncher() bool {
+	v, err := theLib.call(funcType_Bool_Ptr, flatAPI_ISteamUtils_IsSteamChinaLauncher, uintptr(s))
+	if err != nil {
+		panic(err)
+	}
+	return byte(v) != 0
+}
+
+func (s steamUtils) IsSteamInBigPictureMode() bool {
+	v, err := theLib.call(funcType_Bool_Ptr, flatAPI_ISteamUtils_IsSteamInBigPictureMode, uintptr(s))
+	if err != nil {
+		panic(err)
+	}
+	return byte(v) != 0
+}
+
+func (s steamUtils) IsSteamRunningInVR() bool {
+	v, err := theLib.call(funcType_Bool_Ptr, flatAPI_ISteamUtils_IsSteamRunningInVR, uintptr(s))
+	if err != nil {
+		panic(err)
+	}
+	return byte(v) != 0
+}
+
 func (s steamUtils) IsSteamRunningOnSteamDeck() bool {
 	v, err := theLib.call(funcType_Bool_Ptr, flatAPI_ISteamUtils_IsSteamRunningOnSteamDeck, uintptr(s))
 	if err != nil {
@@ -559,8 +607,8 @@ func (s steamUtils) IsSteamRunningOnSteamDeck() bool {
 	return byte(v) != 0
 }
 
-func (s steamUtils) ShowFloatingGamepadTextInput(keyboardMode EFloatingGamepadTextInputMode, textFieldXPosition, textFieldYPosition, textFieldWidth, textFieldHeight int32) bool {
-	v, err := theLib.call(funcType_Bool_Ptr_Int32_Int32_Int32_Int32_Int32, flatAPI_ISteamUtils_ShowFloatingGamepadTextInput, uintptr(s), uintptr(keyboardMode), uintptr(textFieldXPosition), uintptr(textFieldYPosition), uintptr(textFieldWidth), uintptr(textFieldHeight))
+func (s steamUtils) IsVRHeadsetStreamingEnabled() bool {
+	v, err := theLib.call(funcType_Bool_Ptr, flatAPI_ISteamUtils_IsVRHeadsetStreamingEnabled, uintptr(s))
 	if err != nil {
 		panic(err)
 	}
@@ -580,4 +628,12 @@ func (s steamUtils) SetWarningMessageHook(hook func(severity int, debugText stri
 	if err != nil {
 		panic(err)
 	}
+}
+
+func (s steamUtils) ShowFloatingGamepadTextInput(keyboardMode EFloatingGamepadTextInputMode, textFieldXPosition, textFieldYPosition, textFieldWidth, textFieldHeight int32) bool {
+	v, err := theLib.call(funcType_Bool_Ptr_Int32_Int32_Int32_Int32_Int32, flatAPI_ISteamUtils_ShowFloatingGamepadTextInput, uintptr(s), uintptr(keyboardMode), uintptr(textFieldXPosition), uintptr(textFieldYPosition), uintptr(textFieldWidth), uintptr(textFieldHeight))
+	if err != nil {
+		panic(err)
+	}
+	return byte(v) != 0
 }
