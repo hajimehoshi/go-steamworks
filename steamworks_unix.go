@@ -108,6 +108,11 @@ import (
 // static void callFunc_Void_Ptr_Bool(uintptr_t f, uintptr_t arg0, uint8_t arg1) {
 //   ((void (*)(void*, bool))(f))((void*)arg0, (bool)arg1);
 // }
+//
+// static void callFunc_Void_Ptr_Ptr(uintptr_t f, uintptr_t arg0, uintptr_t arg1) {
+//   ((void (*)(void*, void *))(f))((void*)arg0, (void*)arg1);
+// }
+// extern void __cdecl SteamAPIDebugTextGlobalHook(int nSeverity, const char *pchDebugText);
 import "C"
 
 type lib struct {
@@ -139,6 +144,7 @@ const (
 	funcType_Ptr_Ptr
 	funcType_Void
 	funcType_Void_Ptr_Bool
+	funcType_Void_Ptr_Ptr
 )
 
 func (l *lib) call(ftype funcType, name string, args ...uintptr) (C.uint64_t, error) {
@@ -190,6 +196,8 @@ func (l *lib) call(ftype funcType, name string, args ...uintptr) (C.uint64_t, er
 		return C.uint64_t(C.callFunc_Ptr(f)), nil
 	case funcType_Ptr_Ptr:
 		return C.uint64_t(C.callFunc_Ptr_Ptr(f, C.uintptr_t(args[0]))), nil
+	case funcType_Void_Ptr_Ptr:
+		C.callFunc_Void_Ptr_Ptr(f, C.uintptr_t(args[0]), C.uintptr_t(args[1]))
 	case funcType_Void:
 		C.callFunc_Void(f)
 		return 0, nil
@@ -557,4 +565,19 @@ func (s steamUtils) ShowFloatingGamepadTextInput(keyboardMode EFloatingGamepadTe
 		panic(err)
 	}
 	return byte(v) != 0
+}
+
+func (s steamUtils) SetWarningMessageHook(hook func(severity int, debugText string)) {
+	var err error
+	userWarningMessageHook = hook
+	if hook == nil {
+		// Tell steam we want to stop receiving callbacks
+		_, err = theLib.call(funcType_Void, flatAPI_ISteamUtils_SetWarningMessageHook, uintptr(s), uintptr(0))
+	} else {
+		// Tell steam we want to receive callbacks at this address
+		_, err = theLib.call(funcType_Void, flatAPI_ISteamUtils_SetWarningMessageHook, uintptr(s), uintptr(C.SteamAPIDebugTextGlobalHook))
+	}
+	if err != nil {
+		panic(err)
+	}
 }

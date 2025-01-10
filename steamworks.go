@@ -89,6 +89,7 @@ type ISteamUserStats interface {
 type ISteamUtils interface {
 	IsSteamRunningOnSteamDeck() bool
 	ShowFloatingGamepadTextInput(keyboardMode EFloatingGamepadTextInputMode, textFieldXPosition, textFieldYPosition, textFieldWidth, textFieldHeight int32) bool
+	SetWarningMessageHook(hook func(severity int, debugText string))
 }
 
 type ISteamFriends interface {
@@ -136,6 +137,7 @@ const (
 	flatAPI_SteamUtils                               = "SteamAPI_SteamUtils_v010"
 	flatAPI_ISteamUtils_IsSteamRunningOnSteamDeck    = "SteamAPI_ISteamUtils_IsSteamRunningOnSteamDeck"
 	flatAPI_ISteamUtils_ShowFloatingGamepadTextInput = "SteamAPI_ISteamUtils_ShowFloatingGamepadTextInput"
+	flatAPI_ISteamUtils_SetWarningMessageHook        = "SteamAPI_ISteamUtils_SetWarningMessageHook"
 )
 
 type steamErrMsg [1024]byte

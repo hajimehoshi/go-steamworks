@@ -11,6 +11,11 @@ import (
 	"golang.org/x/sys/windows"
 )
 
+/*
+extern void __cdecl SteamAPIDebugTextGlobalHook(int nSeverity, const char *pchDebugText);
+*/
+import "C"
+
 const is32Bit = unsafe.Sizeof(int(0)) == 4
 
 func cStringToGoString(v uintptr, sizeHint int) string {
@@ -389,4 +394,19 @@ func (s steamUtils) ShowFloatingGamepadTextInput(keyboardMode EFloatingGamepadTe
 		panic(err)
 	}
 	return byte(v) != 0
+}
+
+func (s steamUtils) SetWarningMessageHook(hook func(severity int, debugText string)) {
+	var err error
+	userWarningMessageHook = hook
+	if hook == nil {
+		// Tell steam we want to stop receiving callbacks
+		_, err = theDLL.call(flatAPI_ISteamUtils_SetWarningMessageHook, uintptr(s), uintptr(0))
+	} else {
+		// Tell steam we want to receive callbacks at this address
+		_, err = theDLL.call(flatAPI_ISteamUtils_SetWarningMessageHook, uintptr(s), uintptr(C.SteamAPIDebugTextGlobalHook))
+	}
+	if err != nil {
+		panic(err)
+	}
 }
