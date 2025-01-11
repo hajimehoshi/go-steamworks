@@ -97,6 +97,11 @@ func Init() error {
 	return nil
 }
 
+func Shutdown() error {
+	_, err := theDLL.call(flatAPI_Shutdown)
+	return err
+}
+
 func RunCallbacks() {
 	if _, err := theDLL.call(flatAPI_RunCallbacks); err != nil {
 		panic(err)

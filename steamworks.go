@@ -107,6 +107,7 @@ type ISteamFriends interface {
 const (
 	flatAPI_RestartAppIfNecessary = "SteamAPI_RestartAppIfNecessary"
 	flatAPI_InitFlat              = "SteamAPI_InitFlat"
+	flatAPI_Shutdown              = "SteamAPI_Shutdown"
 	flatAPI_RunCallbacks          = "SteamAPI_RunCallbacks"
 
 	flatAPI_SteamApps                         = "SteamAPI_SteamApps_v008"

@@ -274,6 +274,11 @@ func Init() error {
 	return nil
 }
 
+func Shutdown() error {
+	_, err := theLib.call(funcType_Void, flatAPI_Shutdown)
+	return err
+}
+
 func RunCallbacks() {
 	if _, err := theLib.call(funcType_Void, flatAPI_RunCallbacks); err != nil {
 		panic(err)
