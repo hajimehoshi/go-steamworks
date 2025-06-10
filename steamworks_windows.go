@@ -114,7 +114,7 @@ func (s steamApps) BGetDLCDataByIndex(iDLC int) (appID AppId_t, available bool, 
 	if err != nil {
 		panic(err)
 	}
-	return appID, available, cStringToGoString(v, len(name)), byte(v) != 0
+	return appID, available, cStringToGoString(uintptr(unsafe.Pointer(&name[0])), len(name)), byte(v) != 0
 }
 
 func (s steamApps) BIsDlcInstalled(appID AppId_t) bool {
