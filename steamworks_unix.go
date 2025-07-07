@@ -305,6 +305,9 @@ func (s steamApps) GetAppInstallDir(appID AppId_t) string {
 	if err != nil {
 		panic(err)
 	}
+	if uint32(v) == 0 {
+		return ""
+	}
 	return string(path[:uint32(v)-1])
 }
 
