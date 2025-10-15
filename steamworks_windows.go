@@ -92,7 +92,7 @@ func Init() error {
 	return nil
 }
 
-func RunCallbacks() {
+func runCallbacksSteam() {
 	if _, err := theDLL.call(flatAPI_RunCallbacks); err != nil {
 		panic(err)
 	}
@@ -392,4 +392,37 @@ func (s steamUtils) ShowFloatingGamepadTextInput(keyboardMode EFloatingGamepadTe
 		panic(err)
 	}
 	return byte(v) != 0
+}
+
+func steamUtilsGetAPICallResult[T any](s steamUtils, apiCall SteamAPICall_t, callbackType int) (result T, completed, success bool) {
+	var failed bool
+	v, err := theDLL.call(flatAPI_ISteamUtils_GetAPICallResult, uintptr(s), uintptr(apiCall), uintptr(unsafe.Pointer(&result)), unsafe.Sizeof(result), uintptr(callbackType), uintptr(unsafe.Pointer(&failed)))
+	if err != nil {
+		panic(err)
+	}
+	completed = byte(v) != 0
+	success = !failed
+	return
+}
+
+func (s steamUserStats) StartFindLeaderboard(name string, onComplete func(handle SteamLeaderboard_t, found bool, err error)) {
+	cName := append([]byte(name), 0)
+	defer runtime.KeepAlive(cName)
+	v, err := theDLL.call(flatAPI_ISteamUserStats_FindLeaderboard, uintptr(s), uintptr(unsafe.Pointer(&cName[0])))
+	if err != nil {
+		panic(err)
+	}
+	handle := SteamAPICall_t(v)
+
+	registerCallback(func() bool {
+		result, completed, success := steamUtilsGetAPICallResult[LeaderboardFindResult_t](SteamUtils().(steamUtils), handle, LeaderboardFindResult_k_iCallback)
+		if completed {
+			if success && result.m_bLeaderboardFound != 0 {
+				onComplete(result.m_hSteamLeaderboard, true, nil)
+			} else {
+				onComplete(0, false, fmt.Errorf("failed to find leaderboard %s", name))
+			}
+		}
+		return completed
+	})
 }

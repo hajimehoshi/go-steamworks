@@ -266,7 +266,7 @@ func Init() error {
 	return nil
 }
 
-func RunCallbacks() {
+func runCallbacksSteam() {
 	if _, err := theLib.call(funcType_Void, flatAPI_RunCallbacks); err != nil {
 		panic(err)
 	}

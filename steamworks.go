@@ -8,6 +8,16 @@ package steamworks
 type AppId_t uint32
 type CSteamID uint64
 type InputHandle_t uint64
+type SteamAPICall_t uint64
+type SteamLeaderboard_t uint64
+
+const k_iSteamUserStatsCallbacks = 1100
+const LeaderboardFindResult_k_iCallback = k_iSteamUserStatsCallbacks + 4
+
+type LeaderboardFindResult_t struct {
+	m_hSteamLeaderboard SteamLeaderboard_t
+	m_bLeaderboardFound uint8
+}
 
 type ESteamAPIInitResult int32
 
@@ -84,6 +94,7 @@ type ISteamUserStats interface {
 	SetAchievement(name string) bool
 	ClearAchievement(name string) bool
 	StoreStats() bool
+	StartFindLeaderboard(name string, onComplete func(handle SteamLeaderboard_t, found bool, err error))
 }
 
 type ISteamUtils interface {
@@ -132,10 +143,12 @@ const (
 	flatAPI_ISteamUserStats_SetAchievement   = "SteamAPI_ISteamUserStats_SetAchievement"
 	flatAPI_ISteamUserStats_ClearAchievement = "SteamAPI_ISteamUserStats_ClearAchievement"
 	flatAPI_ISteamUserStats_StoreStats       = "SteamAPI_ISteamUserStats_StoreStats"
+	flatAPI_ISteamUserStats_FindLeaderboard  = "SteamAPI_ISteamUserStats_FindLeaderboard"
 
 	flatAPI_SteamUtils                               = "SteamAPI_SteamUtils_v010"
 	flatAPI_ISteamUtils_IsSteamRunningOnSteamDeck    = "SteamAPI_ISteamUtils_IsSteamRunningOnSteamDeck"
 	flatAPI_ISteamUtils_ShowFloatingGamepadTextInput = "SteamAPI_ISteamUtils_ShowFloatingGamepadTextInput"
+	flatAPI_ISteamUtils_GetAPICallResult             = "SteamAPI_ISteamUtils_GetAPICallResult"
 )
 
 type steamErrMsg [1024]byte
