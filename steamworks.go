@@ -63,6 +63,40 @@ const (
 	EFloatingGamepadTextInputMode_ModeNumeric       EFloatingGamepadTextInputMode = 3
 )
 
+type ELeaderboardDataRequest int32
+
+const (
+	ELeaderboardDataRequestGlobal 		    ELeaderboardDataRequest = 0
+	ELeaderboardDataRequestGlobalAroundUser ELeaderboardDataRequest = 1
+	ELeaderboardDataRequestFriends 		    ELeaderboardDataRequest = 2
+	ELeaderboardDataRequestUsers 		    ELeaderboardDataRequest = 3
+)
+
+type ELeaderboardDisplayType int32
+
+const (
+	ELeaderboardDisplayTypeNone             ELeaderboardDisplayType = 0
+	ELeaderboardDisplayTypeNumeric          ELeaderboardDisplayType = 1
+	ELeaderboardDisplayTypeTimeSeconds      ELeaderboardDisplayType = 2
+	ELeaderboardDisplayTypeTimeMilliSeconds ELeaderboardDisplayType = 3
+)
+
+type ELeaderboardSortMethod int32
+
+const (
+	ELeaderboardSortMethodNone       ELeaderboardSortMethod = 0
+	ELeaderboardSortMethodAscending  ELeaderboardSortMethod = 1
+	ELeaderboardSortMethodDescending ELeaderboardSortMethod = 2
+)
+
+type ELeaderboardUploadScoreMethod int32
+
+const (
+	ELeaderboardUploadScoreMethodNone        ELeaderboardUploadScoreMethod = 0
+	ELeaderboardUploadScoreMethodKeepBest    ELeaderboardUploadScoreMethod = 1
+	ELeaderboardUploadScoreMethodForceUpdate ELeaderboardUploadScoreMethod = 2
+)
+
 type ISteamApps interface {
 	BGetDLCDataByIndex(iDLC int) (appID AppId_t, available bool, pchName string, success bool)
 	BIsDlcInstalled(appID AppId_t) bool
