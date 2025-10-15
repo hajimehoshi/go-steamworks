@@ -108,6 +108,14 @@ import (
 // static void callFunc_Void_Ptr_Bool(uintptr_t f, uintptr_t arg0, uint8_t arg1) {
 //   ((void (*)(void*, bool))(f))((void*)arg0, (bool)arg1);
 // }
+//
+// static uint8_t callFunc_Bool_Ptr_Int64_Ptr_Int32_Int32_Ptr(uintptr_t f, uintptr_t arg0, int64_t arg1, uintptr_t arg2, int32_t arg3, int32_t arg4, uintptr_t arg5) {
+//   return ((bool (*)(void*, int64_t, void*, int32_t, int32_t, void*))(f))((void*)arg0, arg1, (void*)arg2, arg3, arg4, (void*)arg5);
+// }
+//
+// static int64_t callFunc_Int64_Ptr_Ptr(uintptr_t f, uintptr_t arg0, uintptr_t arg1) {
+//   return ((int64_t (*)(void*, void*))(f))((void*)arg0, (void*)arg1);
+// }
 import "C"
 
 type lib struct {
@@ -127,6 +135,7 @@ const (
 	funcType_Bool_Ptr_Ptr_Ptr
 	funcType_Bool_Ptr_Ptr_Ptr_Int32
 	funcType_Bool_Int32
+	funcType_Bool_Ptr_Int64_Ptr_Int32_Int32_Ptr
 	funcType_Int32_Int64
 	funcType_Int32_Ptr
 	funcType_Int32_Ptr_Int32_Ptr_Int32
@@ -135,6 +144,7 @@ const (
 	funcType_Int32_Ptr_Ptr
 	funcType_Int32_Ptr_Ptr_Ptr_Int32
 	funcType_Int64_Ptr
+	funcType_Int64_Ptr_Ptr
 	funcType_Ptr
 	funcType_Ptr_Ptr
 	funcType_Void
@@ -172,6 +182,8 @@ func (l *lib) call(ftype funcType, name string, args ...uintptr) (C.uint64_t, er
 		return C.uint64_t(C.callFunc_Bool_Ptr_Ptr_Ptr_Int32(f, C.uintptr_t(args[0]), C.uintptr_t(args[1]), C.uintptr_t(args[2]), C.int32_t(args[3]))), nil
 	case funcType_Bool_Int32:
 		return C.uint64_t(C.callFunc_Bool_Int32(f, C.uint32_t(args[0]))), nil
+	case funcType_Bool_Ptr_Int64_Ptr_Int32_Int32_Ptr:
+		return C.uint64_t(C.callFunc_Bool_Ptr_Int64_Ptr_Int32_Int32_Ptr(f, C.uintptr_t(args[0]), C.int64_t(args[1]), C.uintptr_t(args[2]), C.int32_t(args[3]), C.int32_t(args[4]), C.uintptr_t(args[5]))), nil
 	case funcType_Int32_Ptr:
 		return C.uint64_t(C.callFunc_Int32_Ptr(f, C.uintptr_t(args[0]))), nil
 	case funcType_Int32_Ptr_Int32_Ptr_Int32:
@@ -186,6 +198,8 @@ func (l *lib) call(ftype funcType, name string, args ...uintptr) (C.uint64_t, er
 		return C.uint64_t(C.callFunc_Int32_Ptr_Ptr_Ptr_Int32(f, C.uintptr_t(args[0]), C.uintptr_t(args[1]), C.uintptr_t(args[2]), C.int32_t(args[3]))), nil
 	case funcType_Int64_Ptr:
 		return C.uint64_t(C.callFunc_Int64_Ptr(f, C.uintptr_t(args[0]))), nil
+	case funcType_Int64_Ptr_Ptr:
+		return C.uint64_t(C.callFunc_Int64_Ptr_Ptr(f, C.uintptr_t(args[0]), C.uintptr_t(args[1]))), nil
 	case funcType_Ptr:
 		return C.uint64_t(C.callFunc_Ptr(f)), nil
 	case funcType_Ptr_Ptr:
@@ -560,4 +574,37 @@ func (s steamUtils) ShowFloatingGamepadTextInput(keyboardMode EFloatingGamepadTe
 		panic(err)
 	}
 	return byte(v) != 0
+}
+
+func steamUtilsGetAPICallResult[T any](s steamUtils, apiCall SteamAPICall_t, callbackType int) (result T, completed, success bool) {
+	var failed bool
+	v, err := theLib.call(funcType_Bool_Ptr_Int64_Ptr_Int32_Int32_Ptr, flatAPI_ISteamUtils_GetAPICallResult, uintptr(s), uintptr(apiCall), uintptr(unsafe.Pointer(&result)), uintptr(unsafe.Sizeof(result)), uintptr(callbackType), uintptr(unsafe.Pointer(&failed)))
+	if err != nil {
+		panic(err)
+	}
+	completed = byte(v) != 0
+	success = !failed
+	return
+}
+
+func (s steamUserStats) StartFindLeaderboard(name string, onComplete func(handle SteamLeaderboard_t, found bool, err error)) {
+	cname := C.CString(name)
+	defer C.free(unsafe.Pointer(cname))
+	v, err := theLib.call(funcType_Int64_Ptr_Ptr, flatAPI_ISteamUserStats_FindLeaderboard, uintptr(s), uintptr(unsafe.Pointer(cname)))
+	if err != nil {
+		panic(err)
+	}
+	handle := SteamAPICall_t(v)
+
+	registerCallback(func() bool {
+		result, completed, success := steamUtilsGetAPICallResult[LeaderboardFindResult_t](SteamUtils().(steamUtils), handle, LeaderboardFindResult_k_iCallback)
+		if completed {
+			if success && result.m_bLeaderboardFound != 0 {
+				onComplete(result.m_hSteamLeaderboard, true, nil)
+			} else {
+				onComplete(0, false, fmt.Errorf("failed to find leaderboard %s", name))
+			}
+		}
+		return completed
+	})
 }
