@@ -122,7 +122,7 @@ func (s steamUserStats) DownloadLeaderboardEntries(hSteamLeaderboard SteamLeader
 			// Now grab all the entries with the detail count we learned
 			for i := range result.entryCount {
 				var ok bool
-				ok, entries[i] = s.getDownloadedLeaderboardEntry(result.steamLeaderboardEntries, i)
+				ok, entries[i] = s.rawGetDownloadedLeaderboardEntry(result.steamLeaderboardEntries, i)
 				if !ok {
 					onComplete(nil, fmt.Errorf("failed to get leaderboard entry %d", i))
 					return true

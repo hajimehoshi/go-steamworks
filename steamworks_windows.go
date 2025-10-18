@@ -394,6 +394,15 @@ func (s steamUtils) ShowFloatingGamepadTextInput(keyboardMode EFloatingGamepadTe
 	return byte(v) != 0
 }
 
+func (s steamUserStats) GetLeaderboardEntryCount(hSteamLeaderboard SteamLeaderboard_t) int32 {
+	v, err := theDLL.call(flatAPI_ISteamUserStats_GetLeaderboardEntryCount, uintptr(s), uintptr(hSteamLeaderboard))
+	if err != nil {
+		panic(err)
+	}
+	return int32(v)
+}
+
+// Basically a member function, but implemented as a standalone function because of generics limitations.
 func steamUtilsGetAPICallResult[T any](s steamUtils, apiCall SteamAPICall_t, callbackType int) (result T, completed, success bool) {
 	var failed bool
 	v, err := theDLL.call(flatAPI_ISteamUtils_GetAPICallResult, uintptr(s), uintptr(apiCall), uintptr(unsafe.Pointer(&result)), unsafe.Sizeof(result), uintptr(callbackType), uintptr(unsafe.Pointer(&failed)))
@@ -415,7 +424,7 @@ func (s steamUserStats) rawFindLeaderboard(name string) SteamAPICall_t {
 	return SteamAPICall_t(v)
 }
 
-func (s steamUserStats) getDownloadedLeaderboardEntry(hSteamLeaderboardEntries SteamLeaderboardEntries_t, index int) (success bool, entry LeaderboardEntry) {
+func (s steamUserStats) rawGetDownloadedLeaderboardEntry(hSteamLeaderboardEntries SteamLeaderboardEntries_t, index int) (success bool, entry LeaderboardEntry) {
 	var rawEntry leaderboardEntry_t
 	v, err := theDLL.call(flatAPI_ISteamUserStats_GetDownloadedLeaderboardEntry, uintptr(s), uintptr(hSteamLeaderboardEntries), uintptr(index), uintptr(unsafe.Pointer(&rawEntry)), uintptr(0), uintptr(0))
 	if err != nil {
@@ -457,12 +466,4 @@ func (s steamUserStats) rawUploadLeaderboardScore(hSteamLeaderboard SteamLeaderb
 		panic(err)
 	}
 	return SteamAPICall_t(v)
-}
-
-func (s steamUserStats) GetLeaderboardEntryCount(hSteamLeaderboard SteamLeaderboard_t) int32 {
-	v, err := theDLL.call(flatAPI_ISteamUserStats_GetLeaderboardEntryCount, uintptr(s), uintptr(hSteamLeaderboard))
-	if err != nil {
-		panic(err)
-	}
-	return int32(v)
 }
