@@ -49,6 +49,10 @@ import (
 //   return ((bool (*)(void*, int32_t, int32_t, int32_t, int32_t, int32_t))(f))((void*)arg0, arg1, arg2, arg3, arg4, arg5);
 // }
 //
+// static uint8_t callFunc_Bool_Ptr_Int64_Ptr_Int32_Int32_Ptr(uintptr_t f, uintptr_t arg0, int64_t arg1, uintptr_t arg2, int32_t arg3, int32_t arg4, uintptr_t arg5) {
+//   return ((bool (*)(void*, int64_t, void*, int32_t, int32_t, void*))(f))((void*)arg0, arg1, (void*)arg2, arg3, arg4, (void*)arg5);
+// }
+//
 // static uint8_t callFunc_Bool_Ptr_Ptr(uintptr_t f, uintptr_t arg0, uintptr_t arg1) {
 //   return ((bool (*)(void*, void*))(f))((void*)arg0, (void*)arg1);
 // }
@@ -123,6 +127,7 @@ const (
 	funcType_Bool_Ptr_Bool
 	funcType_Bool_Ptr_Int32
 	funcType_Bool_Ptr_Int32_Int32_Int32_Int32_Int32
+	funcType_Bool_Ptr_Int64_Ptr_Int32_Int32_Ptr
 	funcType_Bool_Ptr_Ptr
 	funcType_Bool_Ptr_Ptr_Ptr
 	funcType_Bool_Ptr_Ptr_Ptr_Int32
@@ -164,6 +169,8 @@ func (l *lib) call(ftype funcType, name string, args ...uintptr) (C.uint64_t, er
 		return C.uint64_t(C.callFunc_Bool_Ptr_Int32(f, C.uintptr_t(args[0]), C.int32_t(args[1]))), nil
 	case funcType_Bool_Ptr_Int32_Int32_Int32_Int32_Int32:
 		return C.uint64_t(C.callFunc_Bool_Ptr_Int32_Int32_Int32_Int32_Int32(f, C.uintptr_t(args[0]), C.int32_t(args[1]), C.int32_t(args[2]), C.int32_t(args[3]), C.int32_t(args[4]), C.int32_t(args[5]))), nil
+	case functype.funcType_Bool_Ptr_Int64_Ptr_Int32_Int32_Ptr:
+		return C.uint64_t(C.callFunc_Bool_Ptr_Int64_Ptr_Int32_Int32_Ptr(f, C.uintptr_t(args[0]), C.int64_t(args[1]), C.uintptr_t(args[2]), C.int32_t(args[3]), C.int32_t(args[4]), C.uintptr_t(args[5]))), nil
 	case funcType_Bool_Ptr_Ptr:
 		return C.uint64_t(C.callFunc_Bool_Ptr_Ptr(f, C.uintptr_t(args[0]), C.uintptr_t(args[1]))), nil
 	case funcType_Bool_Ptr_Ptr_Ptr:
@@ -536,6 +543,14 @@ func (s steamUserStats) StoreStats() bool {
 	return byte(v) != 0
 }
 
+func (s steamUserStats) GetLeaderboardEntryCount(hSteamLeaderboard SteamLeaderboard_t) int32 {
+	v, err := theLib.call(funcType_Int32_Ptr_Int64, flatAPI_ISteamUserStats_GetLeaderboardEntryCount, uintptr(s), uintptr(hSteamLeaderboard))
+	if err != nil {
+		panic(err)
+	}
+	return int32(v)
+}
+
 func SteamUtils() ISteamUtils {
 	v, err := theLib.call(funcType_Ptr, flatAPI_SteamUtils)
 	if err != nil {
@@ -560,4 +575,16 @@ func (s steamUtils) ShowFloatingGamepadTextInput(keyboardMode EFloatingGamepadTe
 		panic(err)
 	}
 	return byte(v) != 0
+}
+
+// Basically a member function, but implemented as a standalone function because of generics limitations.
+func steamUtilsGetAPICallResult[T any](s steamUtils, apiCall SteamAPICall_t, callbackType int) (result T, completed, success bool) {
+	var failed bool
+	v, err := theLib.call(funcType_Bool_Ptr_Int64_Ptr_Int32_Int32_Ptr, flatAPI_ISteamUtils_GetAPICallResult, uintptr(s), uintptr(apiCall), uintptr(unsafe.Pointer(&result)), unsafe.Sizeof(result), uintptr(callbackType), uintptr(unsafe.Pointer(&failed)))
+	if err != nil {
+		panic(err)
+	}
+	completed = byte(v) != 0
+	success = !failed
+	return
 }
