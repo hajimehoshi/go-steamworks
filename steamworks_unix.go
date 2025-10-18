@@ -189,7 +189,7 @@ func (l *lib) call(ftype funcType, name string, args ...uintptr) (C.uint64_t, er
 		return C.uint64_t(C.callFunc_Bool_Ptr_Int32(f, C.uintptr_t(args[0]), C.int32_t(args[1]))), nil
 	case funcType_Bool_Ptr_Int32_Int32_Int32_Int32_Int32:
 		return C.uint64_t(C.callFunc_Bool_Ptr_Int32_Int32_Int32_Int32_Int32(f, C.uintptr_t(args[0]), C.int32_t(args[1]), C.int32_t(args[2]), C.int32_t(args[3]), C.int32_t(args[4]), C.int32_t(args[5]))), nil
-	case functype.funcType_Bool_Ptr_Int64_Ptr_Int32_Int32_Ptr:
+	case funcType_Bool_Ptr_Int64_Ptr_Int32_Int32_Ptr:
 		return C.uint64_t(C.callFunc_Bool_Ptr_Int64_Ptr_Int32_Int32_Ptr(f, C.uintptr_t(args[0]), C.int64_t(args[1]), C.uintptr_t(args[2]), C.int32_t(args[3]), C.int32_t(args[4]), C.uintptr_t(args[5]))), nil
 	case funcType_Bool_Ptr_Ptr:
 		return C.uint64_t(C.callFunc_Bool_Ptr_Ptr(f, C.uintptr_t(args[0]), C.uintptr_t(args[1]))), nil
