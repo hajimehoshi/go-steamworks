@@ -53,7 +53,7 @@ type LeaderboardScoresDownloaded_t struct {
 type leaderboardScoreUploaded_t struct {
 	bSuccess            uint8
 	hSteamLeaderboard   SteamLeaderboard_t
-	nScore              int
+	nScore              int32
 	bScoreChanged       uint8
 	nGlobalRankNew      int
 	nGlobalRankPrevious int
@@ -64,23 +64,23 @@ type UGCHandle_t uint64
 // Raw steam interface struct
 type leaderboardEntry_t struct {
 	steamIDUser CSteamID
-	globalRank  int
-	score       int
-	details     int
+	globalRank  int32
+	score       int32
+	details     int32
 	UGC         UGCHandle_t
 }
 
 // What go users see
 type LeaderboardEntry struct {
 	steamIDUser CSteamID
-	globalRank  int
-	score       int
+	globalRank  int32
+	score       int32
 	details     []int
 	UGC         UGCHandle_t
 }
 
 type LeaderboardScoreUploaded struct {
-	nScore              int
+	nScore              int32
 	bScoreChanged       uint8
 	nGlobalRankNew      int
 	nGlobalRankPrevious int
@@ -94,8 +94,9 @@ func (s steamUserStats) FindLeaderboard(name string, onComplete func(handle Stea
 			return false
 		}
 
-		if success && result.bLeaderboardFound != 0 {
-			onComplete(result.hSteamLeaderboard, true, nil)
+		if success {
+			found := result.bLeaderboardFound != 0
+			onComplete(result.hSteamLeaderboard, found, nil)
 		} else {
 			onComplete(0, false, fmt.Errorf("failed to find leaderboard %s", name))
 		}
@@ -117,7 +118,7 @@ func (s steamUserStats) DownloadLeaderboardEntries(hSteamLeaderboard SteamLeader
 			if result.entryCount == 0 {
 				onComplete(nil, nil)
 			}
-			entries := make([]LeaderboardEntry, 0, result.entryCount)
+			entries := make([]LeaderboardEntry, result.entryCount)
 
 			// Now grab all the entries with the detail count we learned
 			for i := range result.entryCount {
@@ -137,7 +138,7 @@ func (s steamUserStats) DownloadLeaderboardEntries(hSteamLeaderboard SteamLeader
 	})
 }
 
-func (s steamUserStats) UploadLeaderboardScore(hSteamLeaderboard SteamLeaderboard_t, eLeaderboardUploadScoreMethod ELeaderboardUploadScoreMethod, score int, details []int, onComplete func(result LeaderboardScoreUploaded, success bool, err error)) {
+func (s steamUserStats) UploadLeaderboardScore(hSteamLeaderboard SteamLeaderboard_t, eLeaderboardUploadScoreMethod ELeaderboardUploadScoreMethod, score int, details []int, onComplete func(result LeaderboardScoreUploaded, err error)) {
 	v := s.rawUploadLeaderboardScore(hSteamLeaderboard, eLeaderboardUploadScoreMethod, score, details)
 
 	handle := SteamAPICall_t(v)
@@ -148,9 +149,9 @@ func (s steamUserStats) UploadLeaderboardScore(hSteamLeaderboard SteamLeaderboar
 		}
 
 		if !success {
-			onComplete(LeaderboardScoreUploaded{}, false, fmt.Errorf("GetAPICallResult failed"))
+			onComplete(LeaderboardScoreUploaded{}, fmt.Errorf("GetAPICallResult failed"))
 		} else if rawResult.bSuccess == 0 {
-			onComplete(LeaderboardScoreUploaded{}, false, fmt.Errorf("bSuccess is false"))
+			onComplete(LeaderboardScoreUploaded{}, fmt.Errorf("bSuccess is false"))
 		} else {
 			result := LeaderboardScoreUploaded{
 				nScore:              rawResult.nScore,
@@ -158,7 +159,7 @@ func (s steamUserStats) UploadLeaderboardScore(hSteamLeaderboard SteamLeaderboar
 				nGlobalRankNew:      rawResult.nGlobalRankNew,
 				nGlobalRankPrevious: rawResult.nGlobalRankPrevious,
 			}
-			onComplete(result, true, nil)
+			onComplete(result, nil)
 		}
 		return true
 	})

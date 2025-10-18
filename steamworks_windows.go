@@ -434,13 +434,15 @@ func (s steamUserStats) rawGetDownloadedLeaderboardEntry(hSteamLeaderboardEntrie
 		return false, LeaderboardEntry{}
 	}
 
-	entry.details = make([]int, rawEntry.details)
-	v, err = theDLL.call(flatAPI_ISteamUserStats_GetDownloadedLeaderboardEntry, uintptr(s), uintptr(hSteamLeaderboardEntries), uintptr(index), uintptr(unsafe.Pointer(&rawEntry)), uintptr(unsafe.Pointer(&entry.details[0])), uintptr(rawEntry.details))
-	if err != nil {
-		panic(err)
-	}
-	if byte(v) == 0 {
-		return false, LeaderboardEntry{}
+	if rawEntry.details > 0 {
+		entry.details = make([]int, rawEntry.details)
+		v, err = theDLL.call(flatAPI_ISteamUserStats_GetDownloadedLeaderboardEntry, uintptr(s), uintptr(hSteamLeaderboardEntries), uintptr(index), uintptr(unsafe.Pointer(&rawEntry)), uintptr(unsafe.Pointer(&entry.details[0])), uintptr(rawEntry.details))
+		if err != nil {
+			panic(err)
+		}
+		if byte(v) == 0 {
+			return false, LeaderboardEntry{}
+		}
 	}
 
 	entry.globalRank = rawEntry.globalRank
@@ -461,7 +463,11 @@ func (s steamUserStats) rawDownloadLeaderboardEntries(hSteamLeaderboard SteamLea
 }
 
 func (s steamUserStats) rawUploadLeaderboardScore(hSteamLeaderboard SteamLeaderboard_t, eLeaderboardUploadScoreMethod ELeaderboardUploadScoreMethod, score int, details []int) SteamAPICall_t {
-	v, err := theDLL.call(flatAPI_ISteamUserStats_UploadLeaderboardScore, uintptr(s), uintptr(hSteamLeaderboard), uintptr(eLeaderboardUploadScoreMethod), uintptr(score), uintptr(unsafe.Pointer(&details[0])), uintptr(len(details)))
+	var detailsPtr uintptr
+	if len(details) > 0 {
+		detailsPtr = uintptr(unsafe.Pointer(&details[0]))
+	}
+	v, err := theDLL.call(flatAPI_ISteamUserStats_UploadLeaderboardScore, uintptr(s), uintptr(hSteamLeaderboard), uintptr(eLeaderboardUploadScoreMethod), uintptr(score), detailsPtr, uintptr(len(details)))
 	if err != nil {
 		panic(err)
 	}

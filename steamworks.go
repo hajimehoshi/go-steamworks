@@ -92,6 +92,8 @@ type ISteamUserStats interface {
 	StoreStats() bool
 	FindLeaderboard(name string, onComplete func(handle SteamLeaderboard_t, found bool, err error))
 	DownloadLeaderboardEntries(hSteamLeaderboard SteamLeaderboard_t, eLeaderboardDataRequest ELeaderboardDataRequest, nRangeStart, nRangeEnd int, onComplete func(entries []LeaderboardEntry, err error))
+	UploadLeaderboardScore(hSteamLeaderboard SteamLeaderboard_t, eLeaderboardUploadScoreMethod ELeaderboardUploadScoreMethod, nScore int, pScoreDetails []int, onComplete func(result LeaderboardScoreUploaded, err error))
+	GetLeaderboardEntryCount(hSteamLeaderboard SteamLeaderboard_t) int32
 }
 
 type ISteamUtils interface {
