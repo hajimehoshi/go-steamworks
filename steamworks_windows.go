@@ -367,51 +367,12 @@ func (s steamUserStats) StoreStats() bool {
 	return byte(v) != 0
 }
 
-func SteamUtils() ISteamUtils {
-	v, err := theDLL.call(flatAPI_SteamUtils)
-	if err != nil {
-		panic(err)
-	}
-	return steamUtils(v)
-}
-
-type steamUtils uintptr
-
-func (s steamUtils) IsSteamRunningOnSteamDeck() bool {
-	v, err := theDLL.call(flatAPI_ISteamUtils_IsSteamRunningOnSteamDeck, uintptr(s))
-	if err != nil {
-		panic(err)
-	}
-
-	return byte(v) != 0
-}
-
-func (s steamUtils) ShowFloatingGamepadTextInput(keyboardMode EFloatingGamepadTextInputMode, textFieldXPosition, textFieldYPosition, textFieldWidth, textFieldHeight int32) bool {
-	v, err := theDLL.call(flatAPI_ISteamUtils_ShowFloatingGamepadTextInput, uintptr(s), uintptr(keyboardMode), uintptr(textFieldXPosition), uintptr(textFieldYPosition), uintptr(textFieldWidth), uintptr(textFieldHeight))
-	if err != nil {
-		panic(err)
-	}
-	return byte(v) != 0
-}
-
 func (s steamUserStats) GetLeaderboardEntryCount(hSteamLeaderboard SteamLeaderboard_t) int32 {
 	v, err := theDLL.call(flatAPI_ISteamUserStats_GetLeaderboardEntryCount, uintptr(s), uintptr(hSteamLeaderboard))
 	if err != nil {
 		panic(err)
 	}
 	return int32(v)
-}
-
-// Basically a member function, but implemented as a standalone function because of generics limitations.
-func steamUtilsGetAPICallResult[T any](s steamUtils, apiCall SteamAPICall_t, callbackType int) (result T, completed, success bool) {
-	var failed bool
-	v, err := theDLL.call(flatAPI_ISteamUtils_GetAPICallResult, uintptr(s), uintptr(apiCall), uintptr(unsafe.Pointer(&result)), unsafe.Sizeof(result), uintptr(callbackType), uintptr(unsafe.Pointer(&failed)))
-	if err != nil {
-		panic(err)
-	}
-	completed = byte(v) != 0
-	success = !failed
-	return
 }
 
 func (s steamUserStats) rawFindLeaderboard(name string) SteamAPICall_t {
@@ -472,4 +433,43 @@ func (s steamUserStats) rawUploadLeaderboardScore(hSteamLeaderboard SteamLeaderb
 		panic(err)
 	}
 	return SteamAPICall_t(v)
+}
+
+func SteamUtils() ISteamUtils {
+	v, err := theDLL.call(flatAPI_SteamUtils)
+	if err != nil {
+		panic(err)
+	}
+	return steamUtils(v)
+}
+
+type steamUtils uintptr
+
+func (s steamUtils) IsSteamRunningOnSteamDeck() bool {
+	v, err := theDLL.call(flatAPI_ISteamUtils_IsSteamRunningOnSteamDeck, uintptr(s))
+	if err != nil {
+		panic(err)
+	}
+
+	return byte(v) != 0
+}
+
+func (s steamUtils) ShowFloatingGamepadTextInput(keyboardMode EFloatingGamepadTextInputMode, textFieldXPosition, textFieldYPosition, textFieldWidth, textFieldHeight int32) bool {
+	v, err := theDLL.call(flatAPI_ISteamUtils_ShowFloatingGamepadTextInput, uintptr(s), uintptr(keyboardMode), uintptr(textFieldXPosition), uintptr(textFieldYPosition), uintptr(textFieldWidth), uintptr(textFieldHeight))
+	if err != nil {
+		panic(err)
+	}
+	return byte(v) != 0
+}
+
+// Basically a member function, but implemented as a standalone function because of generics limitations.
+func steamUtilsGetAPICallResult[T any](s steamUtils, apiCall SteamAPICall_t, callbackType int) (result T, completed, success bool) {
+	var failed bool
+	v, err := theDLL.call(flatAPI_ISteamUtils_GetAPICallResult, uintptr(s), uintptr(apiCall), uintptr(unsafe.Pointer(&result)), unsafe.Sizeof(result), uintptr(callbackType), uintptr(unsafe.Pointer(&failed)))
+	if err != nil {
+		panic(err)
+	}
+	completed = byte(v) != 0
+	success = !failed
+	return
 }
