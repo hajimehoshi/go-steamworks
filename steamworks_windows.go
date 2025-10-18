@@ -405,24 +405,64 @@ func steamUtilsGetAPICallResult[T any](s steamUtils, apiCall SteamAPICall_t, cal
 	return
 }
 
-func (s steamUserStats) StartFindLeaderboard(name string, onComplete func(handle SteamLeaderboard_t, found bool, err error)) {
+func (s steamUserStats) rawFindLeaderboard(name string) SteamAPICall_t {
 	cName := append([]byte(name), 0)
 	defer runtime.KeepAlive(cName)
 	v, err := theDLL.call(flatAPI_ISteamUserStats_FindLeaderboard, uintptr(s), uintptr(unsafe.Pointer(&cName[0])))
 	if err != nil {
 		panic(err)
 	}
-	handle := SteamAPICall_t(v)
+	return SteamAPICall_t(v)
+}
 
-	registerCallback(func() bool {
-		result, completed, success := steamUtilsGetAPICallResult[LeaderboardFindResult_t](SteamUtils().(steamUtils), handle, LeaderboardFindResult_k_iCallback)
-		if completed {
-			if success && result.m_bLeaderboardFound != 0 {
-				onComplete(result.m_hSteamLeaderboard, true, nil)
-			} else {
-				onComplete(0, false, fmt.Errorf("failed to find leaderboard %s", name))
-			}
-		}
-		return completed
-	})
+func (s steamUserStats) getDownloadedLeaderboardEntry(hSteamLeaderboardEntries SteamLeaderboardEntries_t, index int) (success bool, entry LeaderboardEntry) {
+	var rawEntry leaderboardEntry_t
+	v, err := theDLL.call(flatAPI_ISteamUserStats_GetDownloadedLeaderboardEntry, uintptr(s), uintptr(hSteamLeaderboardEntries), uintptr(index), uintptr(unsafe.Pointer(&rawEntry)), uintptr(0), uintptr(0))
+	if err != nil {
+		panic(err)
+	}
+	if byte(v) == 0 {
+		return false, LeaderboardEntry{}
+	}
+
+	entry.details = make([]int, rawEntry.details)
+	v, err = theDLL.call(flatAPI_ISteamUserStats_GetDownloadedLeaderboardEntry, uintptr(s), uintptr(hSteamLeaderboardEntries), uintptr(index), uintptr(unsafe.Pointer(&rawEntry)), uintptr(unsafe.Pointer(&entry.details[0])), uintptr(rawEntry.details))
+	if err != nil {
+		panic(err)
+	}
+	if byte(v) == 0 {
+		return false, LeaderboardEntry{}
+	}
+
+	entry.globalRank = rawEntry.globalRank
+	entry.score = rawEntry.score
+	entry.steamIDUser = rawEntry.steamIDUser
+	entry.UGC = rawEntry.UGC
+
+	success = byte(v) != 0
+	return
+}
+
+func (s steamUserStats) rawDownloadLeaderboardEntries(hSteamLeaderboard SteamLeaderboard_t, eLeaderboardDataRequest ELeaderboardDataRequest, nRangeStart int, nRangeEnd int) SteamAPICall_t {
+	v, err := theDLL.call(flatAPI_ISteamUserStats_DownloadLeaderboardEntries, uintptr(s), uintptr(hSteamLeaderboard), uintptr(eLeaderboardDataRequest), uintptr(nRangeStart), uintptr(nRangeEnd))
+	if err != nil {
+		panic(err)
+	}
+	return SteamAPICall_t(v)
+}
+
+func (s steamUserStats) rawUploadLeaderboardScore(hSteamLeaderboard SteamLeaderboard_t, eLeaderboardUploadScoreMethod ELeaderboardUploadScoreMethod, score int, details []int) SteamAPICall_t {
+	v, err := theDLL.call(flatAPI_ISteamUserStats_UploadLeaderboardScore, uintptr(s), uintptr(hSteamLeaderboard), uintptr(eLeaderboardUploadScoreMethod), uintptr(score), uintptr(unsafe.Pointer(&details[0])), uintptr(len(details)))
+	if err != nil {
+		panic(err)
+	}
+	return SteamAPICall_t(v)
+}
+
+func (s steamUserStats) GetLeaderboardEntryCount(hSteamLeaderboard SteamLeaderboard_t) int32 {
+	v, err := theDLL.call(flatAPI_ISteamUserStats_GetLeaderboardEntryCount, uintptr(s), uintptr(hSteamLeaderboard))
+	if err != nil {
+		panic(err)
+	}
+	return int32(v)
 }
