@@ -599,9 +599,10 @@ func (s steamUserStats) rawGetDownloadedLeaderboardEntry(hSteamLeaderboardEntrie
 		return false, LeaderboardEntry{}
 	}
 
-	if rawEntry.details > 0 {
-		entry.details = make([]int32, rawEntry.details)
-		v, err = theLib.call(funcType_Bool_Ptr_Int64_Int32_Ptr_Ptr_Int32, flatAPI_ISteamUserStats_GetDownloadedLeaderboardEntry, uintptr(s), uintptr(hSteamLeaderboardEntries), uintptr(index), uintptr(unsafe.Pointer(&rawEntry)), uintptr(unsafe.Pointer(&entry.details[0])), uintptr(rawEntry.details))
+	readEntry := rawEntry.Read()
+	if readEntry.details > 0 {
+		entry.details = make([]int32, readEntry.details)
+		v, err = theLib.call(funcType_Bool_Ptr_Int64_Int32_Ptr_Ptr_Int32, flatAPI_ISteamUserStats_GetDownloadedLeaderboardEntry, uintptr(s), uintptr(hSteamLeaderboardEntries), uintptr(index), uintptr(unsafe.Pointer(&rawEntry)), uintptr(unsafe.Pointer(&entry.details[0])), uintptr(readEntry.details))
 		if err != nil {
 			panic(err)
 		}
@@ -610,10 +611,10 @@ func (s steamUserStats) rawGetDownloadedLeaderboardEntry(hSteamLeaderboardEntrie
 		}
 	}
 
-	entry.globalRank = rawEntry.globalRank
-	entry.score = rawEntry.score
-	entry.steamIDUser = rawEntry.steamIDUser
-	entry.UGC = rawEntry.UGC
+	entry.globalRank = readEntry.globalRank
+	entry.score = readEntry.score
+	entry.steamIDUser = readEntry.steamIDUser
+	entry.UGC = readEntry.UGC
 
 	success = byte(v) != 0
 	return
