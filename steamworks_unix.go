@@ -600,7 +600,7 @@ func (s steamUserStats) rawGetDownloadedLeaderboardEntry(hSteamLeaderboardEntrie
 	}
 
 	if rawEntry.details > 0 {
-		entry.details = make([]int, rawEntry.details)
+		entry.details = make([]int32, rawEntry.details)
 		v, err = theLib.call(funcType_Bool_Ptr_Int64_Int32_Ptr_Ptr_Int32, flatAPI_ISteamUserStats_GetDownloadedLeaderboardEntry, uintptr(s), uintptr(hSteamLeaderboardEntries), uintptr(index), uintptr(unsafe.Pointer(&rawEntry)), uintptr(unsafe.Pointer(&entry.details[0])), uintptr(rawEntry.details))
 		if err != nil {
 			panic(err)
@@ -627,7 +627,7 @@ func (s steamUserStats) rawDownloadLeaderboardEntries(hSteamLeaderboard SteamLea
 	return SteamAPICall_t(v)
 }
 
-func (s steamUserStats) rawUploadLeaderboardScore(hSteamLeaderboard SteamLeaderboard_t, eLeaderboardUploadScoreMethod ELeaderboardUploadScoreMethod, score int, details []int) SteamAPICall_t {
+func (s steamUserStats) rawUploadLeaderboardScore(hSteamLeaderboard SteamLeaderboard_t, eLeaderboardUploadScoreMethod ELeaderboardUploadScoreMethod, score int32, details []int32) SteamAPICall_t {
 	var detailsPtr uintptr
 	if len(details) > 0 {
 		detailsPtr = uintptr(unsafe.Pointer(&details[0]))

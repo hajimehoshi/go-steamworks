@@ -385,7 +385,7 @@ func (s steamUserStats) rawFindLeaderboard(name string) SteamAPICall_t {
 	return SteamAPICall_t(v)
 }
 
-func (s steamUserStats) rawGetDownloadedLeaderboardEntry(hSteamLeaderboardEntries SteamLeaderboardEntries_t, index int) (success bool, entry LeaderboardEntry) {
+func (s steamUserStats) rawGetDownloadedLeaderboardEntry(hSteamLeaderboardEntries SteamLeaderboardEntries_t, index int32) (success bool, entry LeaderboardEntry) {
 	var rawEntry leaderboardEntry_t
 	v, err := theDLL.call(flatAPI_ISteamUserStats_GetDownloadedLeaderboardEntry, uintptr(s), uintptr(hSteamLeaderboardEntries), uintptr(index), uintptr(unsafe.Pointer(&rawEntry)), uintptr(0), uintptr(0))
 	if err != nil {
@@ -396,7 +396,7 @@ func (s steamUserStats) rawGetDownloadedLeaderboardEntry(hSteamLeaderboardEntrie
 	}
 
 	if rawEntry.details > 0 {
-		entry.details = make([]int, rawEntry.details)
+		entry.details = make([]int32, rawEntry.details)
 		v, err = theDLL.call(flatAPI_ISteamUserStats_GetDownloadedLeaderboardEntry, uintptr(s), uintptr(hSteamLeaderboardEntries), uintptr(index), uintptr(unsafe.Pointer(&rawEntry)), uintptr(unsafe.Pointer(&entry.details[0])), uintptr(rawEntry.details))
 		if err != nil {
 			panic(err)

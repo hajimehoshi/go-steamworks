@@ -47,7 +47,7 @@ type LeaderboardFindResult_t struct {
 type LeaderboardScoresDownloaded_t struct {
 	steamLeaderboard        SteamLeaderboard_t
 	steamLeaderboardEntries SteamLeaderboardEntries_t
-	entryCount              int
+	entryCount              int32
 }
 
 type leaderboardScoreUploaded_t struct {
@@ -55,8 +55,8 @@ type leaderboardScoreUploaded_t struct {
 	hSteamLeaderboard   SteamLeaderboard_t
 	nScore              int32
 	bScoreChanged       uint8
-	nGlobalRankNew      int
-	nGlobalRankPrevious int
+	nGlobalRankNew      int32
+	nGlobalRankPrevious int32
 }
 
 type UGCHandle_t uint64
@@ -75,15 +75,15 @@ type LeaderboardEntry struct {
 	steamIDUser CSteamID
 	globalRank  int32
 	score       int32
-	details     []int
+	details     []int32
 	UGC         UGCHandle_t
 }
 
 type LeaderboardScoreUploaded struct {
 	nScore              int32
 	bScoreChanged       uint8
-	nGlobalRankNew      int
-	nGlobalRankPrevious int
+	nGlobalRankNew      int32
+	nGlobalRankPrevious int32
 }
 
 func (s steamUserStats) FindLeaderboard(name string, onComplete func(handle SteamLeaderboard_t, found bool, err error)) {
