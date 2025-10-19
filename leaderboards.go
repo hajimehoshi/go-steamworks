@@ -104,7 +104,7 @@ func (s steamUserStats) FindLeaderboard(name string, onComplete func(handle Stea
 	})
 }
 
-func (s steamUserStats) DownloadLeaderboardEntries(hSteamLeaderboard SteamLeaderboard_t, eLeaderboardDataRequest ELeaderboardDataRequest, nRangeStart, nRangeEnd int, onComplete func(entries []LeaderboardEntry, err error)) {
+func (s steamUserStats) DownloadLeaderboardEntries(hSteamLeaderboard SteamLeaderboard_t, eLeaderboardDataRequest ELeaderboardDataRequest, nRangeStart, nRangeEnd int32, onComplete func(entries []LeaderboardEntry, err error)) {
 	v := s.rawDownloadLeaderboardEntries(hSteamLeaderboard, eLeaderboardDataRequest, nRangeStart, nRangeEnd)
 
 	handle := SteamAPICall_t(v)
@@ -117,6 +117,7 @@ func (s steamUserStats) DownloadLeaderboardEntries(hSteamLeaderboard SteamLeader
 		if success {
 			if result.entryCount == 0 {
 				onComplete(nil, nil)
+				return true
 			}
 			entries := make([]LeaderboardEntry, result.entryCount)
 
@@ -138,7 +139,7 @@ func (s steamUserStats) DownloadLeaderboardEntries(hSteamLeaderboard SteamLeader
 	})
 }
 
-func (s steamUserStats) UploadLeaderboardScore(hSteamLeaderboard SteamLeaderboard_t, eLeaderboardUploadScoreMethod ELeaderboardUploadScoreMethod, score int, details []int, onComplete func(result LeaderboardScoreUploaded, err error)) {
+func (s steamUserStats) UploadLeaderboardScore(hSteamLeaderboard SteamLeaderboard_t, eLeaderboardUploadScoreMethod ELeaderboardUploadScoreMethod, score int32, details []int32, onComplete func(result LeaderboardScoreUploaded, err error)) {
 	v := s.rawUploadLeaderboardScore(hSteamLeaderboard, eLeaderboardUploadScoreMethod, score, details)
 
 	handle := SteamAPICall_t(v)
