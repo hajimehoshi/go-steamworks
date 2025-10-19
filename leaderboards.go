@@ -39,30 +39,29 @@ const (
 type SteamLeaderboard_t uint64
 type SteamLeaderboardEntries_t uint64
 
-type LeaderboardFindResult_t struct {
-	hSteamLeaderboard SteamLeaderboard_t
-	bLeaderboardFound uint8
+type leaderboardFindResult struct {
+	steamLeaderboard SteamLeaderboard_t
+	leaderboardFound bool
 }
 
-type LeaderboardScoresDownloaded_t struct {
+type leaderboardScoresDownloaded struct {
 	steamLeaderboard        SteamLeaderboard_t
 	steamLeaderboardEntries SteamLeaderboardEntries_t
 	entryCount              int32
 }
 
-type leaderboardScoreUploaded_t struct {
-	bSuccess            uint8
-	hSteamLeaderboard   SteamLeaderboard_t
-	nScore              int32
-	bScoreChanged       uint8
-	nGlobalRankNew      int32
-	nGlobalRankPrevious int32
+type leaderboardScoreUploaded struct {
+	success            bool
+	steamLeaderboard   SteamLeaderboard_t
+	score              int32
+	scoreChanged       bool
+	globalRankNew      int32
+	globalRankPrevious int32
 }
 
 type UGCHandle_t uint64
 
-// Raw steam interface struct
-type leaderboardEntry_t struct {
+type leaderboardEntry struct {
 	steamIDUser CSteamID
 	globalRank  int32
 	score       int32
@@ -81,7 +80,7 @@ type LeaderboardEntry struct {
 
 type LeaderboardScoreUploaded struct {
 	nScore              int32
-	bScoreChanged       uint8
+	bScoreChanged       bool
 	nGlobalRankNew      int32
 	nGlobalRankPrevious int32
 }
@@ -89,14 +88,14 @@ type LeaderboardScoreUploaded struct {
 func (s steamUserStats) FindLeaderboard(name string, onComplete func(handle SteamLeaderboard_t, found bool, err error)) {
 	handle := s.rawFindLeaderboard(name)
 	registerCallback(func() bool {
-		result, completed, success := steamUtilsGetAPICallResult[LeaderboardFindResult_t](SteamUtils().(steamUtils), handle, LeaderboardFindResult_k_iCallback)
+		resultRaw, completed, success := steamUtilsGetAPICallResult[leaderboardFindResult_t](SteamUtils().(steamUtils), handle, LeaderboardFindResult_k_iCallback)
 		if !completed {
 			return false
 		}
 
 		if success {
-			found := result.bLeaderboardFound != 0
-			onComplete(result.hSteamLeaderboard, found, nil)
+			result := resultRaw.Read()
+			onComplete(result.steamLeaderboard, result.leaderboardFound, nil)
 		} else {
 			onComplete(0, false, fmt.Errorf("failed to find leaderboard %s", name))
 		}
@@ -109,12 +108,13 @@ func (s steamUserStats) DownloadLeaderboardEntries(hSteamLeaderboard SteamLeader
 
 	handle := SteamAPICall_t(v)
 	registerCallback(func() bool {
-		result, completed, success := steamUtilsGetAPICallResult[LeaderboardScoresDownloaded_t](SteamUtils().(steamUtils), handle, LeaderboardScoresDownloaded_k_iCallback)
+		resultRaw, completed, success := steamUtilsGetAPICallResult[leaderboardScoresDownloaded_t](SteamUtils().(steamUtils), handle, LeaderboardScoresDownloaded_k_iCallback)
 		if !completed {
 			return false
 		}
 
 		if success {
+			result := resultRaw.Read()
 			if result.entryCount == 0 {
 				onComplete(nil, nil)
 				return true
@@ -144,21 +144,22 @@ func (s steamUserStats) UploadLeaderboardScore(hSteamLeaderboard SteamLeaderboar
 
 	handle := SteamAPICall_t(v)
 	registerCallback(func() bool {
-		rawResult, completed, success := steamUtilsGetAPICallResult[leaderboardScoreUploaded_t](SteamUtils().(steamUtils), handle, LeaderboardScoreUploaded_k_iCallback)
+		resultRaw, completed, success := steamUtilsGetAPICallResult[leaderboardScoreUploaded_t](SteamUtils().(steamUtils), handle, LeaderboardScoreUploaded_k_iCallback)
 		if !completed {
 			return false
 		}
 
+		readResult := resultRaw.Read()
 		if !success {
 			onComplete(LeaderboardScoreUploaded{}, fmt.Errorf("GetAPICallResult failed"))
-		} else if rawResult.bSuccess == 0 {
+		} else if !readResult.success {
 			onComplete(LeaderboardScoreUploaded{}, fmt.Errorf("bSuccess is false"))
 		} else {
 			result := LeaderboardScoreUploaded{
-				nScore:              rawResult.nScore,
-				bScoreChanged:       rawResult.bScoreChanged,
-				nGlobalRankNew:      rawResult.nGlobalRankNew,
-				nGlobalRankPrevious: rawResult.nGlobalRankPrevious,
+				nScore:              readResult.score,
+				bScoreChanged:       readResult.scoreChanged,
+				nGlobalRankNew:      readResult.globalRankNew,
+				nGlobalRankPrevious: readResult.globalRankPrevious,
 			}
 			onComplete(result, nil)
 		}
