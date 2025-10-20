@@ -31,24 +31,24 @@ type dll struct {
 	procs map[string]*windows.LazyProc
 }
 
-func (d *dll) call(name string, args ...uintptr) (uintptr, error) {
+func (d *dll) call(name string, args ...uintptr) (uintptr, uintptr, error) {
 	if d.procs == nil {
 		d.procs = map[string]*windows.LazyProc{}
 	}
 	if _, ok := d.procs[name]; !ok {
 		d.procs[name] = d.d.NewProc(name)
 	}
-	r, _, err := d.procs[name].Call(args...)
+	r1, r2, err := d.procs[name].Call(args...)
 	if err != nil {
 		errno, ok := err.(windows.Errno)
 		if !ok {
-			return r, err
+			return r1, r2, err
 		}
 		if errno != 0 {
-			return r, err
+			return r1, r2, err
 		}
 	}
-	return r, nil
+	return r1, r2, nil
 }
 
 func loadDLL() (*dll, error) {
@@ -73,7 +73,7 @@ func init() {
 }
 
 func RestartAppIfNecessary(appID uint32) bool {
-	v, err := theDLL.call(flatAPI_RestartAppIfNecessary, uintptr(appID))
+	v, _, err := theDLL.call(flatAPI_RestartAppIfNecessary, uintptr(appID))
 	if err != nil {
 		panic(err)
 	}
@@ -82,7 +82,7 @@ func RestartAppIfNecessary(appID uint32) bool {
 
 func Init() error {
 	var msg steamErrMsg
-	v, err := theDLL.call(flatAPI_InitFlat, uintptr(unsafe.Pointer(&msg[0])))
+	v, _, err := theDLL.call(flatAPI_InitFlat, uintptr(unsafe.Pointer(&msg[0])))
 	if err != nil {
 		panic(err)
 	}
@@ -93,13 +93,13 @@ func Init() error {
 }
 
 func runCallbacksSteam() {
-	if _, err := theDLL.call(flatAPI_RunCallbacks); err != nil {
+	if _, _, err := theDLL.call(flatAPI_RunCallbacks); err != nil {
 		panic(err)
 	}
 }
 
 func SteamApps() ISteamApps {
-	v, err := theDLL.call(flatAPI_SteamApps)
+	v, _, err := theDLL.call(flatAPI_SteamApps)
 	if err != nil {
 		panic(err)
 	}
@@ -110,7 +110,7 @@ type steamApps uintptr
 
 func (s steamApps) BGetDLCDataByIndex(iDLC int) (appID AppId_t, available bool, pchName string, success bool) {
 	var name [4096]byte
-	v, err := theDLL.call(flatAPI_ISteamApps_BGetDLCDataByIndex, uintptr(s), uintptr(iDLC), uintptr(unsafe.Pointer(&appID)), uintptr(unsafe.Pointer(&available)), uintptr(unsafe.Pointer(&name[0])), uintptr(len(name)))
+	v, _, err := theDLL.call(flatAPI_ISteamApps_BGetDLCDataByIndex, uintptr(s), uintptr(iDLC), uintptr(unsafe.Pointer(&appID)), uintptr(unsafe.Pointer(&available)), uintptr(unsafe.Pointer(&name[0])), uintptr(len(name)))
 	if err != nil {
 		panic(err)
 	}
@@ -118,7 +118,7 @@ func (s steamApps) BGetDLCDataByIndex(iDLC int) (appID AppId_t, available bool, 
 }
 
 func (s steamApps) BIsDlcInstalled(appID AppId_t) bool {
-	v, err := theDLL.call(flatAPI_ISteamApps_BIsDlcInstalled, uintptr(s), uintptr(appID))
+	v, _, err := theDLL.call(flatAPI_ISteamApps_BIsDlcInstalled, uintptr(s), uintptr(appID))
 	if err != nil {
 		panic(err)
 	}
@@ -127,7 +127,7 @@ func (s steamApps) BIsDlcInstalled(appID AppId_t) bool {
 
 func (s steamApps) GetAppInstallDir(appID AppId_t) string {
 	var path [4096]byte
-	v, err := theDLL.call(flatAPI_ISteamApps_GetAppInstallDir, uintptr(s), uintptr(appID), uintptr(unsafe.Pointer(&path[0])), uintptr(len(path)))
+	v, _, err := theDLL.call(flatAPI_ISteamApps_GetAppInstallDir, uintptr(s), uintptr(appID), uintptr(unsafe.Pointer(&path[0])), uintptr(len(path)))
 	if err != nil {
 		panic(err)
 	}
@@ -138,7 +138,7 @@ func (s steamApps) GetAppInstallDir(appID AppId_t) string {
 }
 
 func (s steamApps) GetCurrentGameLanguage() string {
-	v, err := theDLL.call(flatAPI_ISteamApps_GetCurrentGameLanguage, uintptr(s))
+	v, _, err := theDLL.call(flatAPI_ISteamApps_GetCurrentGameLanguage, uintptr(s))
 	if err != nil {
 		panic(err)
 	}
@@ -146,7 +146,7 @@ func (s steamApps) GetCurrentGameLanguage() string {
 }
 
 func (s steamApps) GetDLCCount() int32 {
-	v, err := theDLL.call(flatAPI_ISteamApps_GetDLCCount, uintptr(s))
+	v, _, err := theDLL.call(flatAPI_ISteamApps_GetDLCCount, uintptr(s))
 	if err != nil {
 		panic(err)
 	}
@@ -154,7 +154,7 @@ func (s steamApps) GetDLCCount() int32 {
 }
 
 func SteamFriends() ISteamFriends {
-	v, err := theDLL.call(flagAPI_SteamFriends)
+	v, _, err := theDLL.call(flagAPI_SteamFriends)
 	if err != nil {
 		panic(err)
 	}
@@ -164,7 +164,7 @@ func SteamFriends() ISteamFriends {
 type steamFriends uintptr
 
 func (s steamFriends) GetPersonaName() string {
-	v, err := theDLL.call(flatAPI_ISteamFriends_GetPersonaName, uintptr(s))
+	v, _, err := theDLL.call(flatAPI_ISteamFriends_GetPersonaName, uintptr(s))
 	if err != nil {
 		panic(err)
 	}
@@ -177,7 +177,7 @@ func (s steamFriends) SetRichPresence(key, value string) bool {
 	cvalue := append([]byte(value), 0)
 	defer runtime.KeepAlive(cvalue)
 
-	v, err := theDLL.call(flatAPI_ISteamFriends_SetRichPresence, uintptr(s), uintptr(unsafe.Pointer(&ckey[0])), uintptr(unsafe.Pointer(&cvalue[0])))
+	v, _, err := theDLL.call(flatAPI_ISteamFriends_SetRichPresence, uintptr(s), uintptr(unsafe.Pointer(&ckey[0])), uintptr(unsafe.Pointer(&cvalue[0])))
 	if err != nil {
 		panic(err)
 	}
@@ -185,7 +185,7 @@ func (s steamFriends) SetRichPresence(key, value string) bool {
 }
 
 func SteamInput() ISteamInput {
-	v, err := theDLL.call(flatAPI_SteamInput)
+	v, _, err := theDLL.call(flatAPI_SteamInput)
 	if err != nil {
 		panic(err)
 	}
@@ -196,7 +196,7 @@ type steamInput uintptr
 
 func (s steamInput) GetConnectedControllers() []InputHandle_t {
 	var handles [_STEAM_INPUT_MAX_COUNT]InputHandle_t
-	v, err := theDLL.call(flatAPI_ISteamInput_GetConnectedControllers, uintptr(s), uintptr(unsafe.Pointer(&handles[0])))
+	v, _, err := theDLL.call(flatAPI_ISteamInput_GetConnectedControllers, uintptr(s), uintptr(unsafe.Pointer(&handles[0])))
 	if err != nil {
 		panic(err)
 	}
@@ -204,7 +204,7 @@ func (s steamInput) GetConnectedControllers() []InputHandle_t {
 }
 
 func (s steamInput) GetInputTypeForHandle(inputHandle InputHandle_t) ESteamInputType {
-	v, err := theDLL.call(flatAPI_ISteamInput_GetInputTypeForHandle, uintptr(s), uintptr(inputHandle))
+	v, _, err := theDLL.call(flatAPI_ISteamInput_GetInputTypeForHandle, uintptr(s), uintptr(inputHandle))
 	if err != nil {
 		panic(err)
 	}
@@ -217,18 +217,18 @@ func (s steamInput) Init(bExplicitlyCallRunFrame bool) bool {
 		callRunFrame = 1
 	}
 	// The error value seems unreliable.
-	v, _ := theDLL.call(flatAPI_ISteamInput_Init, uintptr(s), callRunFrame)
+	v, _, _ := theDLL.call(flatAPI_ISteamInput_Init, uintptr(s), callRunFrame)
 	return byte(v) != 0
 }
 
 func (s steamInput) RunFrame() {
-	if _, err := theDLL.call(flatAPI_ISteamInput_RunFrame, uintptr(s), 0); err != nil {
+	if _, _, err := theDLL.call(flatAPI_ISteamInput_RunFrame, uintptr(s), 0); err != nil {
 		panic(err)
 	}
 }
 
 func SteamRemoteStorage() ISteamRemoteStorage {
-	v, err := theDLL.call(flatAPI_SteamRemoteStorage)
+	v, _, err := theDLL.call(flatAPI_SteamRemoteStorage)
 	if err != nil {
 		panic(err)
 	}
@@ -243,7 +243,7 @@ func (s steamRemoteStorage) FileWrite(file string, data []byte) bool {
 
 	defer runtime.KeepAlive(data)
 
-	v, err := theDLL.call(flatAPI_ISteamRemoteStorage_FileWrite, uintptr(s), uintptr(unsafe.Pointer(&cfile[0])), uintptr(unsafe.Pointer(&data[0])), uintptr(len(data)))
+	v, _, err := theDLL.call(flatAPI_ISteamRemoteStorage_FileWrite, uintptr(s), uintptr(unsafe.Pointer(&cfile[0])), uintptr(unsafe.Pointer(&data[0])), uintptr(len(data)))
 	if err != nil {
 		panic(err)
 	}
@@ -257,7 +257,7 @@ func (s steamRemoteStorage) FileRead(file string, data []byte) int32 {
 
 	defer runtime.KeepAlive(data)
 
-	v, err := theDLL.call(flatAPI_ISteamRemoteStorage_FileRead, uintptr(s), uintptr(unsafe.Pointer(&cfile[0])), uintptr(unsafe.Pointer(&data[0])), uintptr(len(data)))
+	v, _, err := theDLL.call(flatAPI_ISteamRemoteStorage_FileRead, uintptr(s), uintptr(unsafe.Pointer(&cfile[0])), uintptr(unsafe.Pointer(&data[0])), uintptr(len(data)))
 	if err != nil {
 		panic(err)
 	}
@@ -269,7 +269,7 @@ func (s steamRemoteStorage) FileDelete(file string) bool {
 	cfile := append([]byte(file), 0)
 	defer runtime.KeepAlive(cfile)
 
-	v, err := theDLL.call(flatAPI_ISteamRemoteStorage_FileDelete, uintptr(s), uintptr(unsafe.Pointer(&cfile[0])))
+	v, _, err := theDLL.call(flatAPI_ISteamRemoteStorage_FileDelete, uintptr(s), uintptr(unsafe.Pointer(&cfile[0])))
 	if err != nil {
 		panic(err)
 	}
@@ -281,7 +281,7 @@ func (s steamRemoteStorage) GetFileSize(file string) int32 {
 	cfile := append([]byte(file), 0)
 	defer runtime.KeepAlive(cfile)
 
-	v, err := theDLL.call(flatAPI_ISteamRemoteStorage_GetFileSize, uintptr(s), uintptr(unsafe.Pointer(&cfile[0])))
+	v, _, err := theDLL.call(flatAPI_ISteamRemoteStorage_GetFileSize, uintptr(s), uintptr(unsafe.Pointer(&cfile[0])))
 	if err != nil {
 		panic(err)
 	}
@@ -290,7 +290,7 @@ func (s steamRemoteStorage) GetFileSize(file string) int32 {
 }
 
 func SteamUser() ISteamUser {
-	v, err := theDLL.call(flatAPI_SteamUser)
+	v, _, err := theDLL.call(flatAPI_SteamUser)
 	if err != nil {
 		panic(err)
 	}
@@ -304,7 +304,7 @@ func (s steamUser) GetSteamID() CSteamID {
 		// On 32bit machines, syscall cannot treat a returned value as 64bit.
 		panic("GetSteamID is not implemented on 32bit Windows")
 	}
-	v, err := theDLL.call(flatAPI_ISteamUser_GetSteamID, uintptr(s))
+	v, _, err := theDLL.call(flatAPI_ISteamUser_GetSteamID, uintptr(s))
 	if err != nil {
 		panic(err)
 	}
@@ -312,7 +312,7 @@ func (s steamUser) GetSteamID() CSteamID {
 }
 
 func SteamUserStats() ISteamUserStats {
-	v, err := theDLL.call(flatAPI_SteamUserStats)
+	v, _, err := theDLL.call(flatAPI_SteamUserStats)
 	if err != nil {
 		panic(err)
 	}
@@ -325,7 +325,7 @@ func (s steamUserStats) GetAchievement(name string) (achieved, success bool) {
 	cname := append([]byte(name), 0)
 	defer runtime.KeepAlive(cname)
 
-	v, err := theDLL.call(flatAPI_ISteamUserStats_GetAchievement, uintptr(s), uintptr(unsafe.Pointer(&cname[0])), uintptr(unsafe.Pointer(&achieved)))
+	v, _, err := theDLL.call(flatAPI_ISteamUserStats_GetAchievement, uintptr(s), uintptr(unsafe.Pointer(&cname[0])), uintptr(unsafe.Pointer(&achieved)))
 	if err != nil {
 		panic(err)
 	}
@@ -338,7 +338,7 @@ func (s steamUserStats) SetAchievement(name string) bool {
 	cname := append([]byte(name), 0)
 	defer runtime.KeepAlive(cname)
 
-	v, err := theDLL.call(flatAPI_ISteamUserStats_SetAchievement, uintptr(s), uintptr(unsafe.Pointer(&cname[0])))
+	v, _, err := theDLL.call(flatAPI_ISteamUserStats_SetAchievement, uintptr(s), uintptr(unsafe.Pointer(&cname[0])))
 	if err != nil {
 		panic(err)
 	}
@@ -350,7 +350,7 @@ func (s steamUserStats) ClearAchievement(name string) bool {
 	cname := append([]byte(name), 0)
 	defer runtime.KeepAlive(cname)
 
-	v, err := theDLL.call(flatAPI_ISteamUserStats_ClearAchievement, uintptr(s), uintptr(unsafe.Pointer(&cname[0])))
+	v, _, err := theDLL.call(flatAPI_ISteamUserStats_ClearAchievement, uintptr(s), uintptr(unsafe.Pointer(&cname[0])))
 	if err != nil {
 		panic(err)
 	}
@@ -359,7 +359,7 @@ func (s steamUserStats) ClearAchievement(name string) bool {
 }
 
 func (s steamUserStats) StoreStats() bool {
-	v, err := theDLL.call(flatAPI_ISteamUserStats_StoreStats, uintptr(s))
+	v, _, err := theDLL.call(flatAPI_ISteamUserStats_StoreStats, uintptr(s))
 	if err != nil {
 		panic(err)
 	}
@@ -368,7 +368,18 @@ func (s steamUserStats) StoreStats() bool {
 }
 
 func (s steamUserStats) GetLeaderboardEntryCount(hSteamLeaderboard SteamLeaderboard_t) int32 {
-	v, err := theDLL.call(flatAPI_ISteamUserStats_GetLeaderboardEntryCount, uintptr(s), uintptr(hSteamLeaderboard))
+	var v uintptr
+	var err error
+	
+	if is32Bit {
+		// On 32-bit, split the 64-bit hSteamLeaderboard parameter
+		leaderboardLow := uintptr(uint32(hSteamLeaderboard))
+		leaderboardHigh := uintptr(uint32(hSteamLeaderboard >> 32))
+		v, _, err = theDLL.call(flatAPI_ISteamUserStats_GetLeaderboardEntryCount, uintptr(s), leaderboardLow, leaderboardHigh)
+	} else {
+		v, _, err = theDLL.call(flatAPI_ISteamUserStats_GetLeaderboardEntryCount, uintptr(s), uintptr(hSteamLeaderboard))
+	}
+	
 	if err != nil {
 		panic(err)
 	}
@@ -378,16 +389,35 @@ func (s steamUserStats) GetLeaderboardEntryCount(hSteamLeaderboard SteamLeaderbo
 func (s steamUserStats) rawFindLeaderboard(name string) SteamAPICall_t {
 	cName := append([]byte(name), 0)
 	defer runtime.KeepAlive(cName)
-	v, err := theDLL.call(flatAPI_ISteamUserStats_FindLeaderboard, uintptr(s), uintptr(unsafe.Pointer(&cName[0])))
+	v1, v2, err := theDLL.call(flatAPI_ISteamUserStats_FindLeaderboard, uintptr(s), uintptr(unsafe.Pointer(&cName[0])))
 	if err != nil {
 		panic(err)
 	}
-	return SteamAPICall_t(v)
+	var result SteamAPICall_t
+	if is32Bit {
+		// On 32-bit: v1=EAX (low 32 bits), v2=EDX (high 32 bits)
+		// Must convert to uint64 BEFORE shifting to avoid truncation
+		result = SteamAPICall_t(uint64(v1) | (uint64(v2) << 32))
+	} else {
+		result = SteamAPICall_t(v1)
+	}
+	return result
 }
 
 func (s steamUserStats) rawGetDownloadedLeaderboardEntry(hSteamLeaderboardEntries SteamLeaderboardEntries_t, index int32) (success bool, entry LeaderboardEntry) {
 	var rawEntry leaderboardEntry_t
-	v, err := theDLL.call(flatAPI_ISteamUserStats_GetDownloadedLeaderboardEntry, uintptr(s), uintptr(hSteamLeaderboardEntries), uintptr(index), uintptr(unsafe.Pointer(&rawEntry)), uintptr(0), uintptr(0))
+	var v uintptr
+	var err error
+	
+	if is32Bit {
+		// On 32-bit, split the 64-bit hSteamLeaderboardEntries parameter
+		entriesLow := uintptr(uint32(hSteamLeaderboardEntries))
+		entriesHigh := uintptr(uint32(hSteamLeaderboardEntries >> 32))
+		v, _, err = theDLL.call(flatAPI_ISteamUserStats_GetDownloadedLeaderboardEntry, uintptr(s), entriesLow, entriesHigh, uintptr(index), uintptr(unsafe.Pointer(&rawEntry)), uintptr(0), uintptr(0))
+	} else {
+		v, _, err = theDLL.call(flatAPI_ISteamUserStats_GetDownloadedLeaderboardEntry, uintptr(s), uintptr(hSteamLeaderboardEntries), uintptr(index), uintptr(unsafe.Pointer(&rawEntry)), uintptr(0), uintptr(0))
+	}
+	
 	if err != nil {
 		panic(err)
 	}
@@ -398,7 +428,13 @@ func (s steamUserStats) rawGetDownloadedLeaderboardEntry(hSteamLeaderboardEntrie
 	readEntry := rawEntry.Read()
 	if readEntry.details > 0 {
 		entry.details = make([]int32, readEntry.details)
-		v, err = theDLL.call(flatAPI_ISteamUserStats_GetDownloadedLeaderboardEntry, uintptr(s), uintptr(hSteamLeaderboardEntries), uintptr(index), uintptr(unsafe.Pointer(&rawEntry)), uintptr(unsafe.Pointer(&entry.details[0])), uintptr(readEntry.details))
+		if is32Bit {
+			entriesLow := uintptr(uint32(hSteamLeaderboardEntries))
+			entriesHigh := uintptr(uint32(hSteamLeaderboardEntries >> 32))
+			v, _, err = theDLL.call(flatAPI_ISteamUserStats_GetDownloadedLeaderboardEntry, uintptr(s), entriesLow, entriesHigh, uintptr(index), uintptr(unsafe.Pointer(&rawEntry)), uintptr(unsafe.Pointer(&entry.details[0])), uintptr(readEntry.details))
+		} else {
+			v, _, err = theDLL.call(flatAPI_ISteamUserStats_GetDownloadedLeaderboardEntry, uintptr(s), uintptr(hSteamLeaderboardEntries), uintptr(index), uintptr(unsafe.Pointer(&rawEntry)), uintptr(unsafe.Pointer(&entry.details[0])), uintptr(readEntry.details))
+		}
 		if err != nil {
 			panic(err)
 		}
@@ -417,11 +453,25 @@ func (s steamUserStats) rawGetDownloadedLeaderboardEntry(hSteamLeaderboardEntrie
 }
 
 func (s steamUserStats) rawDownloadLeaderboardEntries(hSteamLeaderboard SteamLeaderboard_t, eLeaderboardDataRequest ELeaderboardDataRequest, nRangeStart, nRangeEnd int32) SteamAPICall_t {
-	v, err := theDLL.call(flatAPI_ISteamUserStats_DownloadLeaderboardEntries, uintptr(s), uintptr(hSteamLeaderboard), uintptr(eLeaderboardDataRequest), uintptr(nRangeStart), uintptr(nRangeEnd))
+	var v1, v2 uintptr
+	var err error
+	
+	if is32Bit {
+		// On 32-bit, split the 64-bit hSteamLeaderboard parameter
+		leaderboardLow := uintptr(uint32(hSteamLeaderboard))
+		leaderboardHigh := uintptr(uint32(hSteamLeaderboard >> 32))
+		v1, v2, err = theDLL.call(flatAPI_ISteamUserStats_DownloadLeaderboardEntries, uintptr(s), leaderboardLow, leaderboardHigh, uintptr(eLeaderboardDataRequest), uintptr(nRangeStart), uintptr(nRangeEnd))
+	} else {
+		v1, v2, err = theDLL.call(flatAPI_ISteamUserStats_DownloadLeaderboardEntries, uintptr(s), uintptr(hSteamLeaderboard), uintptr(eLeaderboardDataRequest), uintptr(nRangeStart), uintptr(nRangeEnd))
+	}
+	
 	if err != nil {
 		panic(err)
 	}
-	return SteamAPICall_t(v)
+	if is32Bit {
+		return SteamAPICall_t(uint64(v1) | (uint64(v2) << 32))
+	}
+	return SteamAPICall_t(v1)
 }
 
 func (s steamUserStats) rawUploadLeaderboardScore(hSteamLeaderboard SteamLeaderboard_t, eLeaderboardUploadScoreMethod ELeaderboardUploadScoreMethod, score int32, details []int32) SteamAPICall_t {
@@ -429,15 +479,30 @@ func (s steamUserStats) rawUploadLeaderboardScore(hSteamLeaderboard SteamLeaderb
 	if len(details) > 0 {
 		detailsPtr = uintptr(unsafe.Pointer(&details[0]))
 	}
-	v, err := theDLL.call(flatAPI_ISteamUserStats_UploadLeaderboardScore, uintptr(s), uintptr(hSteamLeaderboard), uintptr(eLeaderboardUploadScoreMethod), uintptr(score), detailsPtr, uintptr(len(details)))
+	
+	var v1, v2 uintptr
+	var err error
+	
+	if is32Bit {
+		// On 32-bit, split the 64-bit hSteamLeaderboard parameter
+		leaderboardLow := uintptr(uint32(hSteamLeaderboard))
+		leaderboardHigh := uintptr(uint32(hSteamLeaderboard >> 32))
+		v1, v2, err = theDLL.call(flatAPI_ISteamUserStats_UploadLeaderboardScore, uintptr(s), leaderboardLow, leaderboardHigh, uintptr(eLeaderboardUploadScoreMethod), uintptr(score), detailsPtr, uintptr(len(details)))
+	} else {
+		v1, v2, err = theDLL.call(flatAPI_ISteamUserStats_UploadLeaderboardScore, uintptr(s), uintptr(hSteamLeaderboard), uintptr(eLeaderboardUploadScoreMethod), uintptr(score), detailsPtr, uintptr(len(details)))
+	}
+	
 	if err != nil {
 		panic(err)
 	}
-	return SteamAPICall_t(v)
+	if is32Bit {
+		return SteamAPICall_t(uint64(v1) | (uint64(v2) << 32))
+	}
+	return SteamAPICall_t(v1)
 }
 
 func SteamUtils() ISteamUtils {
-	v, err := theDLL.call(flatAPI_SteamUtils)
+	v, _, err := theDLL.call(flatAPI_SteamUtils)
 	if err != nil {
 		panic(err)
 	}
@@ -447,7 +512,7 @@ func SteamUtils() ISteamUtils {
 type steamUtils uintptr
 
 func (s steamUtils) IsSteamRunningOnSteamDeck() bool {
-	v, err := theDLL.call(flatAPI_ISteamUtils_IsSteamRunningOnSteamDeck, uintptr(s))
+	v, _, err := theDLL.call(flatAPI_ISteamUtils_IsSteamRunningOnSteamDeck, uintptr(s))
 	if err != nil {
 		panic(err)
 	}
@@ -456,7 +521,7 @@ func (s steamUtils) IsSteamRunningOnSteamDeck() bool {
 }
 
 func (s steamUtils) ShowFloatingGamepadTextInput(keyboardMode EFloatingGamepadTextInputMode, textFieldXPosition, textFieldYPosition, textFieldWidth, textFieldHeight int32) bool {
-	v, err := theDLL.call(flatAPI_ISteamUtils_ShowFloatingGamepadTextInput, uintptr(s), uintptr(keyboardMode), uintptr(textFieldXPosition), uintptr(textFieldYPosition), uintptr(textFieldWidth), uintptr(textFieldHeight))
+	v, _, err := theDLL.call(flatAPI_ISteamUtils_ShowFloatingGamepadTextInput, uintptr(s), uintptr(keyboardMode), uintptr(textFieldXPosition), uintptr(textFieldYPosition), uintptr(textFieldWidth), uintptr(textFieldHeight))
 	if err != nil {
 		panic(err)
 	}
@@ -465,12 +530,38 @@ func (s steamUtils) ShowFloatingGamepadTextInput(keyboardMode EFloatingGamepadTe
 
 // Basically a member function, but implemented as a standalone function because of generics limitations.
 func steamUtilsGetAPICallResult[T any](s steamUtils, apiCall SteamAPICall_t, callbackType int) (result T, completed, success bool) {
-	var failed bool
-	v, err := theDLL.call(flatAPI_ISteamUtils_GetAPICallResult, uintptr(s), uintptr(apiCall), uintptr(unsafe.Pointer(&result)), unsafe.Sizeof(result), uintptr(callbackType), uintptr(unsafe.Pointer(&failed)))
+	var failed uintptr
+	var v uintptr
+	var err error
+
+	if is32Bit {
+		// On 32-bit Windows, we need to manually split the 64-bit value
+		// and pass it as two consecutive stack arguments
+		apiCallLow := uintptr(uint32(apiCall))
+		apiCallHigh := uintptr(uint32(apiCall >> 32))
+		v, _, err = theDLL.call(flatAPI_ISteamUtils_GetAPICallResult,
+			uintptr(s),
+			apiCallLow,
+			apiCallHigh,
+			uintptr(unsafe.Pointer(&result)),
+			uintptr(unsafe.Sizeof(result)),
+			uintptr(callbackType),
+			uintptr(unsafe.Pointer(&failed)))
+	} else {
+		// On 64-bit platforms, pass the 64-bit value directly
+		v, _, err = theDLL.call(flatAPI_ISteamUtils_GetAPICallResult,
+			uintptr(s),
+			uintptr(apiCall),
+			uintptr(unsafe.Pointer(&result)),
+			uintptr(unsafe.Sizeof(result)),
+			uintptr(callbackType),
+			uintptr(unsafe.Pointer(&failed)))
+	}
+
 	if err != nil {
 		panic(err)
 	}
 	completed = byte(v) != 0
-	success = !failed
+	success = failed == 0
 	return
 }

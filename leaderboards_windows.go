@@ -1,10 +1,12 @@
-//go:build windows
+//go:build windows && amd64
 
 package steamworks
 
-// windows platforms use VALVE_CALLBACK_PACK_LARGE as defined in steamclientpublic.h
+// 64-bit Windows uses VALVE_CALLBACK_PACK_LARGE as defined in steamclientpublic.h (8-byte alignment)
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+)
 
 type leaderboardFindResult_t struct {
 	// m_hSteamLeaderboard: 8 bytes
