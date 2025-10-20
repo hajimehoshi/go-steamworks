@@ -530,7 +530,7 @@ func (s steamUtils) ShowFloatingGamepadTextInput(keyboardMode EFloatingGamepadTe
 
 // Basically a member function, but implemented as a standalone function because of generics limitations.
 func steamUtilsGetAPICallResult[T any](s steamUtils, apiCall SteamAPICall_t, callbackType int) (result T, completed, success bool) {
-	var failed uintptr
+	var failed bool
 	var v uintptr
 	var err error
 
@@ -562,6 +562,6 @@ func steamUtilsGetAPICallResult[T any](s steamUtils, apiCall SteamAPICall_t, cal
 		panic(err)
 	}
 	completed = byte(v) != 0
-	success = failed == 0
+	success = !failed
 	return
 }
