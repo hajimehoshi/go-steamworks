@@ -75,7 +75,7 @@ func (me leaderboardEntry_t) Read() leaderboardEntry {
 	result.steamIDUser = CSteamID(binary.NativeEndian.Uint64(me.data[0:8]))
 	result.globalRank = int32(binary.NativeEndian.Uint32(me.data[8:12]))
 	result.score = int32(binary.NativeEndian.Uint32(me.data[12:16]))
-	result.details = int32(binary.NativeEndian.Uint32(me.data[20:24]))
+	result.details = int32(binary.NativeEndian.Uint32(me.data[16:20]))
 	result.UGC = UGCHandle_t(binary.NativeEndian.Uint64(me.data[24:32]))
 	return result
 }
