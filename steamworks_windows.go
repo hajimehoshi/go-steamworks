@@ -204,7 +204,19 @@ func (s steamInput) GetConnectedControllers() []InputHandle_t {
 }
 
 func (s steamInput) GetInputTypeForHandle(inputHandle InputHandle_t) ESteamInputType {
-	v, _, err := theDLL.call(flatAPI_ISteamInput_GetInputTypeForHandle, uintptr(s), uintptr(inputHandle))
+	var v uintptr
+	var err error
+	if is32Bit {
+		// On 32-bit Windows, we need to manually split the 64-bit value
+		// and pass it as two consecutive stack arguments
+		inputHandleLow := uintptr(uint32(inputHandle))
+		inputHandleHigh := uintptr(uint32(inputHandle >> 32))
+
+		v, _, err = theDLL.call(flatAPI_ISteamInput_GetInputTypeForHandle, uintptr(s), inputHandleLow, inputHandleHigh)
+	} else {
+		v, _, err = theDLL.call(flatAPI_ISteamInput_GetInputTypeForHandle, uintptr(s), uintptr(inputHandle))
+	}
+
 	if err != nil {
 		panic(err)
 	}
