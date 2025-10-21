@@ -109,6 +109,10 @@ import (
 //   return ((int64_t (*)(void*, int64_t, int32_t, int32_t, void*, int32_t))(f))((void*)arg0, arg1, arg2, arg3, (void*)arg4, arg5);
 // }
 //
+// static int64_t callFunc_Int64_Ptr_Int64_Int32_Int32_Int32(uintptr_t f, uintptr_t arg0, int64_t arg1, int32_t arg2, int32_t arg3, int32_t arg4) {
+//   return ((int64_t (*)(void*, int64_t, int32_t, int32_t, int32_t))(f))((void*)arg0, arg1, arg2, arg3, arg4);
+// }
+//
 // static uint8_t callFunc_Bool_Ptr_Int64_Int32_Ptr_Ptr_Int32(uintptr_t f, uintptr_t arg0, int64_t arg1, int32_t arg2, uintptr_t arg3, uintptr_t arg4, int32_t arg5) {
 //   return ((bool (*)(void*, int64_t, int32_t, void*, void*, int32_t))(f))((void*)arg0, arg1, arg2, (void*)arg3, (void*)arg4, arg5);
 // }
@@ -158,8 +162,8 @@ const (
 	funcType_Int64_Ptr
 	funcType_Int64_Ptr_Ptr
 	funcType_Bool_Ptr_Int64_Int32_Ptr_Ptr_Int32
-	funcType_Int64_Ptr_Int64_Ptr_Int32
 	funcType_Int64_Ptr_Int64_Int32_Int32_Ptr_Int32
+	funcType_Int64_Ptr_Int64_Int32_Int32_Int32
 	funcType_Ptr
 	funcType_Ptr_Ptr
 	funcType_Void
@@ -217,10 +221,10 @@ func (l *lib) call(ftype funcType, name string, args ...uintptr) (C.uint64_t, er
 		return C.uint64_t(C.callFunc_Int64_Ptr_Ptr(f, C.uintptr_t(args[0]), C.uintptr_t(args[1]))), nil
 	case funcType_Bool_Ptr_Int64_Int32_Ptr_Ptr_Int32:
 		return C.uint64_t(C.callFunc_Bool_Ptr_Int64_Int32_Ptr_Ptr_Int32(f, C.uintptr_t(args[0]), C.int64_t(args[1]), C.int32_t(args[2]), C.uintptr_t(args[3]), C.uintptr_t(args[4]), C.int32_t(args[5]))), nil
-	case funcType_Int64_Ptr_Int64_Ptr_Int32:
-		return C.uint64_t(C.callFunc_Int64_Ptr_Int64_Ptr_Int32(f, C.uintptr_t(args[0]), C.int64_t(args[1]), C.uintptr_t(args[2]), C.int32_t(args[3]))), nil
 	case funcType_Int64_Ptr_Int64_Int32_Int32_Ptr_Int32:
 		return C.uint64_t(C.callFunc_Int64_Ptr_Int64_Int32_Int32_Ptr_Int32(f, C.uintptr_t(args[0]), C.int64_t(args[1]), C.int32_t(args[2]), C.int32_t(args[3]), C.uintptr_t(args[4]), C.int32_t(args[5]))), nil
+	case funcType_Int64_Ptr_Int64_Int32_Int32_Int32:
+		return C.uint64_t(C.callFunc_Int64_Ptr_Int64_Int32_Int32_Int32(f, C.uintptr_t(args[0]), C.int64_t(args[1]), C.int32_t(args[2]), C.int32_t(args[3]), C.int32_t(args[4]))), nil
 	case funcType_Ptr:
 		return C.uint64_t(C.callFunc_Ptr(f)), nil
 	case funcType_Ptr_Ptr:
@@ -621,7 +625,7 @@ func (s steamUserStats) rawGetDownloadedLeaderboardEntry(hSteamLeaderboardEntrie
 }
 
 func (s steamUserStats) rawDownloadLeaderboardEntries(hSteamLeaderboard SteamLeaderboard_t, eLeaderboardDataRequest ELeaderboardDataRequest, nRangeStart, nRangeEnd int32) SteamAPICall_t {
-	v, err := theLib.call(funcType_Int64_Ptr_Int64_Ptr_Int32, flatAPI_ISteamUserStats_DownloadLeaderboardEntries, uintptr(s), uintptr(hSteamLeaderboard), uintptr(eLeaderboardDataRequest), uintptr(nRangeStart), uintptr(nRangeEnd))
+	v, err := theLib.call(funcType_Int64_Ptr_Int64_Int32_Int32_Int32, flatAPI_ISteamUserStats_DownloadLeaderboardEntries, uintptr(s), uintptr(hSteamLeaderboard), uintptr(eLeaderboardDataRequest), uintptr(nRangeStart), uintptr(nRangeEnd))
 	if err != nil {
 		panic(err)
 	}
