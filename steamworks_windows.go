@@ -377,6 +377,15 @@ func SteamUtils() ISteamUtils {
 
 type steamUtils uintptr
 
+func (s steamUtils) IsOverlayEnabled() bool {
+	v, err := theDLL.call(flatAPI_ISteamUtils_IsOverlayEnabled, uintptr(s))
+	if err != nil {
+		panic(err)
+	}
+
+	return byte(v) != 0
+}
+
 func (s steamUtils) IsSteamRunningOnSteamDeck() bool {
 	v, err := theDLL.call(flatAPI_ISteamUtils_IsSteamRunningOnSteamDeck, uintptr(s))
 	if err != nil {

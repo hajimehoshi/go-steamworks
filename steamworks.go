@@ -87,6 +87,7 @@ type ISteamUserStats interface {
 }
 
 type ISteamUtils interface {
+	IsOverlayEnabled() bool
 	IsSteamRunningOnSteamDeck() bool
 	ShowFloatingGamepadTextInput(keyboardMode EFloatingGamepadTextInputMode, textFieldXPosition, textFieldYPosition, textFieldWidth, textFieldHeight int32) bool
 }
@@ -134,6 +135,7 @@ const (
 	flatAPI_ISteamUserStats_StoreStats       = "SteamAPI_ISteamUserStats_StoreStats"
 
 	flatAPI_SteamUtils                               = "SteamAPI_SteamUtils_v010"
+	flatAPI_ISteamUtils_IsOverlayEnabled             = "SteamAPI_ISteamUtils_IsOverlayEnabled"
 	flatAPI_ISteamUtils_IsSteamRunningOnSteamDeck    = "SteamAPI_ISteamUtils_IsSteamRunningOnSteamDeck"
 	flatAPI_ISteamUtils_ShowFloatingGamepadTextInput = "SteamAPI_ISteamUtils_ShowFloatingGamepadTextInput"
 )
