@@ -23,7 +23,7 @@ type lib struct {
 var (
 	// Steam API function pointers - using different names to avoid conflicts with constants
 	ptrAPI_RestartAppIfNecessary                    func(uint32) bool
-	ptrAPI_InitFlat                                 func(uintptr) bool
+	ptrAPI_InitFlat                                 func(uintptr) ESteamAPIInitResult
 	ptrAPI_RunCallbacks                             func()
 	ptrAPI_SteamApps                                func() uintptr
 	ptrAPI_ISteamApps_BGetDLCDataByIndex            func(uintptr, int32, uintptr, uintptr, uintptr, int32) bool
@@ -172,7 +172,7 @@ func RestartAppIfNecessary(appID uint32) bool {
 
 func Init() error {
 	var msg steamErrMsg
-	if !ptrAPI_InitFlat(uintptr(unsafe.Pointer(&msg))) {
+	if ptrAPI_InitFlat(uintptr(unsafe.Pointer(&msg))) != ESteamAPIInitResult_OK {
 		return fmt.Errorf("steamworks: InitFlat failed: %s", msg.String())
 	}
 	return nil
