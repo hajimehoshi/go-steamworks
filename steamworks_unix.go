@@ -72,7 +72,7 @@ func loadLib() (uintptr, error) {
 		return 0, err
 	}
 
-	lib, err := purego.Dlopen(path, purego.RTLD_NOW|purego.RTLD_LOCAL)
+	lib, err := purego.Dlopen(path, purego.RTLD_LAZY|purego.RTLD_LOCAL)
 	if err != nil {
 		return 0, fmt.Errorf("steamworks: dlopen failed: %w", err)
 	}
