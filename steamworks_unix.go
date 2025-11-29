@@ -12,196 +12,52 @@ import (
 	"path/filepath"
 	"runtime"
 	"unsafe"
-)
 
-// #cgo LDFLAGS: -ldl
-//
-// #include <stdbool.h>
-// #include <stdint.h>
-// #include <stdlib.h>
-// #include <dlfcn.h>
-//
-// static uintptr_t dlsym_(uintptr_t handle, const char* name) {
-//   return (uintptr_t)dlsym((void*)handle, name);
-// }
-//
-// static const char* uintptrToChar(uintptr_t str) {
-//   return (const char*)str;
-// }
-//
-// static uint8_t callFunc_Bool(uintptr_t f) {
-//   return ((bool (*)())(f))();
-// }
-//
-// static uint8_t callFunc_Bool_Ptr(uintptr_t f, uintptr_t arg0) {
-//   return ((bool (*)(void*))(f))((void*)arg0);
-// }
-//
-// static uint8_t callFunc_Bool_Ptr_Bool(uintptr_t f, uintptr_t arg0, uint8_t arg1) {
-//   return ((bool (*)(void*, bool))(f))((void*)arg0, (bool)arg1);
-// }
-//
-// static uint8_t callFunc_Bool_Ptr_Int32(uintptr_t f, uintptr_t arg0, int32_t arg1) {
-//   return ((bool (*)(void*, int32_t))(f))((void*)arg0, arg1);
-// }
-//
-// static uint8_t callFunc_Bool_Ptr_Int32_Int32_Int32_Int32_Int32(uintptr_t f, uintptr_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5) {
-//   return ((bool (*)(void*, int32_t, int32_t, int32_t, int32_t, int32_t))(f))((void*)arg0, arg1, arg2, arg3, arg4, arg5);
-// }
-//
-// static uint8_t callFunc_Bool_Ptr_Ptr(uintptr_t f, uintptr_t arg0, uintptr_t arg1) {
-//   return ((bool (*)(void*, void*))(f))((void*)arg0, (void*)arg1);
-// }
-//
-// static uint8_t callFunc_Bool_Ptr_Ptr_Ptr(uintptr_t f, uintptr_t arg0, uintptr_t arg1, uintptr_t arg2) {
-//   return ((bool (*)(void*, void*, void*))(f))((void*)arg0, (void*)arg1, (void*)arg2);
-// }
-//
-// static uint8_t callFunc_Bool_Ptr_Ptr_Ptr_Int32(uintptr_t f, uintptr_t arg0, uintptr_t arg1, uintptr_t arg2, int32_t arg3) {
-//   return ((bool (*)(void*, void*, void*, int32_t))(f))((void*)arg0, (void*)arg1, (void*)arg2, arg3);
-// }
-//
-// static uint8_t callFunc_Bool_Int32(uintptr_t f, uint32_t arg0) {
-//   return ((bool (*)(uint32_t))(f))(arg0);
-// }
-//
-// static int32_t callFunc_Int32_Ptr(uintptr_t f, uintptr_t arg0) {
-//   return ((int32_t (*)(void*))(f))((void*)arg0);
-// }
-//
-// static int32_t callFunc_Int32_Ptr_Int32_Ptr_Int32(uintptr_t f, uintptr_t arg0, int32_t arg1, uintptr_t arg2, int32_t arg3) {
-//   return ((int32_t (*)(void*, int32_t, void*, int32_t))(f))((void*)arg0, arg1, (void*)arg2, arg3);
-// }
-//
-// static int32_t callFunc_Int32_Ptr_Int32_Ptr_Ptr_Ptr_Int32(uintptr_t f, uintptr_t arg0, int32_t arg1, uintptr_t arg2, uintptr_t arg3, uintptr_t arg4, int32_t arg5) {
-//   return ((int32_t (*)(void*, int32_t, void*, void*, void*, int32_t))(f))((void*)arg0, arg1, (void*)arg2, (void*)arg3, (void*)arg4, arg5);
-// }
-//
-// static int32_t callFunc_Int32_Ptr_Int64(uintptr_t f, uintptr_t arg0, int64_t arg1) {
-//   return ((int32_t (*)(void*, int64_t))(f))((void*)arg0, arg1);
-// }
-//
-// static int32_t callFunc_Int32_Ptr_Ptr(uintptr_t f, uintptr_t arg0, uintptr_t arg1) {
-//   return ((int32_t (*)(void*, void*))(f))((void*)arg0, (void*)arg1);
-// }
-//
-// static int32_t callFunc_Int32_Ptr_Ptr_Ptr_Int32(uintptr_t f, uintptr_t arg0, uintptr_t arg1, uintptr_t arg2, int32_t arg3) {
-//   return ((int32_t (*)(void*, void*, void*, int32_t))(f))((void*)arg0, (void*)arg1, (void*)arg2, arg3);
-// }
-//
-// static int64_t callFunc_Int64_Ptr(uintptr_t f, uintptr_t arg0) {
-//   return ((int64_t (*)(void*))(f))((void*)arg0);
-// }
-//
-// static uintptr_t callFunc_Ptr(uintptr_t f) {
-//   return (uintptr_t)((void* (*)())(f))();
-// }
-//
-// static uintptr_t callFunc_Ptr_Ptr(uintptr_t f, uintptr_t arg0) {
-//   return (uintptr_t)((void* (*)(void*))(f))((void*)arg0);
-// }
-//
-// static void callFunc_Void(uintptr_t f) {
-//   ((void (*)())(f))();
-// }
-//
-// static void callFunc_Void_Ptr_Bool(uintptr_t f, uintptr_t arg0, uint8_t arg1) {
-//   ((void (*)(void*, bool))(f))((void*)arg0, (bool)arg1);
-// }
-import "C"
+	"github.com/ebitengine/purego"
+)
 
 type lib struct {
-	lib   C.uintptr_t
-	procs map[string]C.uintptr_t
+	lib uintptr
 }
 
-type funcType int
-
-const (
-	funcType_Bool funcType = iota
-	funcType_Bool_Ptr
-	funcType_Bool_Ptr_Bool
-	funcType_Bool_Ptr_Int32
-	funcType_Bool_Ptr_Int32_Int32_Int32_Int32_Int32
-	funcType_Bool_Ptr_Ptr
-	funcType_Bool_Ptr_Ptr_Ptr
-	funcType_Bool_Ptr_Ptr_Ptr_Int32
-	funcType_Bool_Int32
-	funcType_Int32_Int64
-	funcType_Int32_Ptr
-	funcType_Int32_Ptr_Int32_Ptr_Int32
-	funcType_Int32_Ptr_Int32_Ptr_Ptr_Ptr_Int32
-	funcType_Int32_Ptr_Int64
-	funcType_Int32_Ptr_Ptr
-	funcType_Int32_Ptr_Ptr_Ptr_Int32
-	funcType_Int64_Ptr
-	funcType_Ptr
-	funcType_Ptr_Ptr
-	funcType_Void
-	funcType_Void_Ptr_Bool
+var (
+	// Steam API function pointers - using different names to avoid conflicts with constants
+	ptrAPI_RestartAppIfNecessary                    func(uint32) bool
+	ptrAPI_InitFlat                                 func(uintptr) bool
+	ptrAPI_RunCallbacks                             func()
+	ptrAPI_SteamApps                                func() uintptr
+	ptrAPI_ISteamApps_BGetDLCDataByIndex            func(uintptr, int32, uintptr, uintptr, uintptr, int32) bool
+	ptrAPI_ISteamApps_BIsDlcInstalled               func(uintptr, uint32) bool
+	ptrAPI_ISteamApps_GetAppInstallDir              func(uintptr, uint32, uintptr, int32) int32
+	ptrAPI_ISteamApps_GetCurrentGameLanguage        func(uintptr) uintptr
+	ptrAPI_ISteamApps_GetDLCCount                   func(uintptr) int32
+	ptrAPI_SteamFriends                             func() uintptr
+	ptrAPI_ISteamFriends_GetPersonaName             func(uintptr) uintptr
+	ptrAPI_ISteamFriends_SetRichPresence            func(uintptr, uintptr, uintptr) bool
+	ptrAPI_SteamInput                               func() uintptr
+	ptrAPI_ISteamInput_GetConnectedControllers      func(uintptr, uintptr) int32
+	ptrAPI_ISteamInput_GetInputTypeForHandle        func(uintptr, uint64) int32
+	ptrAPI_ISteamInput_Init                         func(uintptr, bool) bool
+	ptrAPI_ISteamInput_RunFrame                     func(uintptr, bool)
+	ptrAPI_SteamRemoteStorage                       func() uintptr
+	ptrAPI_ISteamRemoteStorage_FileWrite            func(uintptr, uintptr, uintptr, int32) bool
+	ptrAPI_ISteamRemoteStorage_FileRead             func(uintptr, uintptr, uintptr, int32) int32
+	ptrAPI_ISteamRemoteStorage_FileDelete           func(uintptr, uintptr) bool
+	ptrAPI_ISteamRemoteStorage_GetFileSize          func(uintptr, uintptr) int32
+	ptrAPI_SteamUser                                func() uintptr
+	ptrAPI_ISteamUser_GetSteamID                    func(uintptr) uint64
+	ptrAPI_SteamUserStats                           func() uintptr
+	ptrAPI_ISteamUserStats_GetAchievement           func(uintptr, uintptr, uintptr) bool
+	ptrAPI_ISteamUserStats_SetAchievement           func(uintptr, uintptr) bool
+	ptrAPI_ISteamUserStats_ClearAchievement         func(uintptr, uintptr) bool
+	ptrAPI_ISteamUserStats_StoreStats               func(uintptr) bool
+	ptrAPI_SteamUtils                               func() uintptr
+	ptrAPI_ISteamUtils_IsOverlayEnabled             func(uintptr) bool
+	ptrAPI_ISteamUtils_IsSteamRunningOnSteamDeck    func(uintptr) bool
+	ptrAPI_ISteamUtils_ShowFloatingGamepadTextInput func(uintptr, int32, int32, int32, int32, int32) bool
 )
 
-func (l *lib) call(ftype funcType, name string, args ...uintptr) (C.uint64_t, error) {
-	if l.procs == nil {
-		l.procs = map[string]C.uintptr_t{}
-	}
-
-	if _, ok := l.procs[name]; !ok {
-		cname := C.CString(name)
-		defer C.free(unsafe.Pointer(cname))
-		l.procs[name] = C.dlsym_(l.lib, cname)
-	}
-
-	f := l.procs[name]
-	switch ftype {
-	case funcType_Bool:
-		return C.uint64_t(C.callFunc_Bool(f)), nil
-	case funcType_Bool_Ptr:
-		return C.uint64_t(C.callFunc_Bool_Ptr(f, C.uintptr_t(args[0]))), nil
-	case funcType_Bool_Ptr_Bool:
-		return C.uint64_t(C.callFunc_Bool_Ptr_Bool(f, C.uintptr_t(args[0]), C.uint8_t(args[1]))), nil
-	case funcType_Bool_Ptr_Int32:
-		return C.uint64_t(C.callFunc_Bool_Ptr_Int32(f, C.uintptr_t(args[0]), C.int32_t(args[1]))), nil
-	case funcType_Bool_Ptr_Int32_Int32_Int32_Int32_Int32:
-		return C.uint64_t(C.callFunc_Bool_Ptr_Int32_Int32_Int32_Int32_Int32(f, C.uintptr_t(args[0]), C.int32_t(args[1]), C.int32_t(args[2]), C.int32_t(args[3]), C.int32_t(args[4]), C.int32_t(args[5]))), nil
-	case funcType_Bool_Ptr_Ptr:
-		return C.uint64_t(C.callFunc_Bool_Ptr_Ptr(f, C.uintptr_t(args[0]), C.uintptr_t(args[1]))), nil
-	case funcType_Bool_Ptr_Ptr_Ptr:
-		return C.uint64_t(C.callFunc_Bool_Ptr_Ptr_Ptr(f, C.uintptr_t(args[0]), C.uintptr_t(args[1]), C.uintptr_t(args[2]))), nil
-	case funcType_Bool_Ptr_Ptr_Ptr_Int32:
-		return C.uint64_t(C.callFunc_Bool_Ptr_Ptr_Ptr_Int32(f, C.uintptr_t(args[0]), C.uintptr_t(args[1]), C.uintptr_t(args[2]), C.int32_t(args[3]))), nil
-	case funcType_Bool_Int32:
-		return C.uint64_t(C.callFunc_Bool_Int32(f, C.uint32_t(args[0]))), nil
-	case funcType_Int32_Ptr:
-		return C.uint64_t(C.callFunc_Int32_Ptr(f, C.uintptr_t(args[0]))), nil
-	case funcType_Int32_Ptr_Int32_Ptr_Int32:
-		return C.uint64_t(C.callFunc_Int32_Ptr_Int32_Ptr_Int32(f, C.uintptr_t(args[0]), C.int32_t(args[1]), C.uintptr_t(args[2]), C.int32_t(args[3]))), nil
-	case funcType_Int32_Ptr_Int32_Ptr_Ptr_Ptr_Int32:
-		return C.uint64_t(C.callFunc_Int32_Ptr_Int32_Ptr_Ptr_Ptr_Int32(f, C.uintptr_t(args[0]), C.int32_t(args[1]), C.uintptr_t(args[2]), C.uintptr_t(args[3]), C.uintptr_t(args[4]), C.int32_t(args[5]))), nil
-	case funcType_Int32_Ptr_Int64:
-		return C.uint64_t(C.callFunc_Int32_Ptr_Int64(f, C.uintptr_t(args[0]), C.int64_t(args[1]))), nil
-	case funcType_Int32_Ptr_Ptr:
-		return C.uint64_t(C.callFunc_Int32_Ptr_Ptr(f, C.uintptr_t(args[0]), C.uintptr_t(args[1]))), nil
-	case funcType_Int32_Ptr_Ptr_Ptr_Int32:
-		return C.uint64_t(C.callFunc_Int32_Ptr_Ptr_Ptr_Int32(f, C.uintptr_t(args[0]), C.uintptr_t(args[1]), C.uintptr_t(args[2]), C.int32_t(args[3]))), nil
-	case funcType_Int64_Ptr:
-		return C.uint64_t(C.callFunc_Int64_Ptr(f, C.uintptr_t(args[0]))), nil
-	case funcType_Ptr:
-		return C.uint64_t(C.callFunc_Ptr(f)), nil
-	case funcType_Ptr_Ptr:
-		return C.uint64_t(C.callFunc_Ptr_Ptr(f, C.uintptr_t(args[0]))), nil
-	case funcType_Void:
-		C.callFunc_Void(f)
-		return 0, nil
-	case funcType_Void_Ptr_Bool:
-		C.callFunc_Void_Ptr_Bool(f, C.uintptr_t(args[0]), C.uint8_t(args[1]))
-		return 0, nil
-	}
-
-	return 0, fmt.Errorf("steamworks: function %s not implemented", name)
-}
-
-func loadLib() (C.uintptr_t, error) {
+func loadLib() (uintptr, error) {
 	dir, err := os.MkdirTemp("", "")
 	if err != nil {
 		return 0, err
@@ -216,13 +72,45 @@ func loadLib() (C.uintptr_t, error) {
 		return 0, err
 	}
 
-	cpath := C.CString(path)
-	defer C.free(unsafe.Pointer(cpath))
-
-	lib := C.uintptr_t(uintptr(C.dlopen(cpath, C.RTLD_LAZY)))
-	if lib == 0 {
-		return 0, fmt.Errorf("steamworks: dlopen failed: %s", C.GoString(C.dlerror()))
+	lib, err := purego.Dlopen(path, purego.RTLD_LAZY)
+	if err != nil {
+		return 0, fmt.Errorf("steamworks: dlopen failed: %w", err)
 	}
+
+	// Register all Steam API function pointers
+	purego.RegisterLibFunc(&ptrAPI_RestartAppIfNecessary, lib, flatAPI_RestartAppIfNecessary)
+	purego.RegisterLibFunc(&ptrAPI_InitFlat, lib, flatAPI_InitFlat)
+	purego.RegisterLibFunc(&ptrAPI_RunCallbacks, lib, flatAPI_RunCallbacks)
+	purego.RegisterLibFunc(&ptrAPI_SteamApps, lib, flatAPI_SteamApps)
+	purego.RegisterLibFunc(&ptrAPI_ISteamApps_BGetDLCDataByIndex, lib, flatAPI_ISteamApps_BGetDLCDataByIndex)
+	purego.RegisterLibFunc(&ptrAPI_ISteamApps_BIsDlcInstalled, lib, flatAPI_ISteamApps_BIsDlcInstalled)
+	purego.RegisterLibFunc(&ptrAPI_ISteamApps_GetAppInstallDir, lib, flatAPI_ISteamApps_GetAppInstallDir)
+	purego.RegisterLibFunc(&ptrAPI_ISteamApps_GetCurrentGameLanguage, lib, flatAPI_ISteamApps_GetCurrentGameLanguage)
+	purego.RegisterLibFunc(&ptrAPI_ISteamApps_GetDLCCount, lib, flatAPI_ISteamApps_GetDLCCount)
+	purego.RegisterLibFunc(&ptrAPI_SteamFriends, lib, flagAPI_SteamFriends)
+	purego.RegisterLibFunc(&ptrAPI_ISteamFriends_GetPersonaName, lib, flatAPI_ISteamFriends_GetPersonaName)
+	purego.RegisterLibFunc(&ptrAPI_ISteamFriends_SetRichPresence, lib, flatAPI_ISteamFriends_SetRichPresence)
+	purego.RegisterLibFunc(&ptrAPI_SteamInput, lib, flatAPI_SteamInput)
+	purego.RegisterLibFunc(&ptrAPI_ISteamInput_GetConnectedControllers, lib, flatAPI_ISteamInput_GetConnectedControllers)
+	purego.RegisterLibFunc(&ptrAPI_ISteamInput_GetInputTypeForHandle, lib, flatAPI_ISteamInput_GetInputTypeForHandle)
+	purego.RegisterLibFunc(&ptrAPI_ISteamInput_Init, lib, flatAPI_ISteamInput_Init)
+	purego.RegisterLibFunc(&ptrAPI_ISteamInput_RunFrame, lib, flatAPI_ISteamInput_RunFrame)
+	purego.RegisterLibFunc(&ptrAPI_SteamRemoteStorage, lib, flatAPI_SteamRemoteStorage)
+	purego.RegisterLibFunc(&ptrAPI_ISteamRemoteStorage_FileWrite, lib, flatAPI_ISteamRemoteStorage_FileWrite)
+	purego.RegisterLibFunc(&ptrAPI_ISteamRemoteStorage_FileRead, lib, flatAPI_ISteamRemoteStorage_FileRead)
+	purego.RegisterLibFunc(&ptrAPI_ISteamRemoteStorage_FileDelete, lib, flatAPI_ISteamRemoteStorage_FileDelete)
+	purego.RegisterLibFunc(&ptrAPI_ISteamRemoteStorage_GetFileSize, lib, flatAPI_ISteamRemoteStorage_GetFileSize)
+	purego.RegisterLibFunc(&ptrAPI_SteamUser, lib, flatAPI_SteamUser)
+	purego.RegisterLibFunc(&ptrAPI_ISteamUser_GetSteamID, lib, flatAPI_ISteamUser_GetSteamID)
+	purego.RegisterLibFunc(&ptrAPI_SteamUserStats, lib, flatAPI_SteamUserStats)
+	purego.RegisterLibFunc(&ptrAPI_ISteamUserStats_GetAchievement, lib, flatAPI_ISteamUserStats_GetAchievement)
+	purego.RegisterLibFunc(&ptrAPI_ISteamUserStats_SetAchievement, lib, flatAPI_ISteamUserStats_SetAchievement)
+	purego.RegisterLibFunc(&ptrAPI_ISteamUserStats_ClearAchievement, lib, flatAPI_ISteamUserStats_ClearAchievement)
+	purego.RegisterLibFunc(&ptrAPI_ISteamUserStats_StoreStats, lib, flatAPI_ISteamUserStats_StoreStats)
+	purego.RegisterLibFunc(&ptrAPI_SteamUtils, lib, flatAPI_SteamUtils)
+	purego.RegisterLibFunc(&ptrAPI_ISteamUtils_IsOverlayEnabled, lib, flatAPI_ISteamUtils_IsOverlayEnabled)
+	purego.RegisterLibFunc(&ptrAPI_ISteamUtils_IsSteamRunningOnSteamDeck, lib, flatAPI_ISteamUtils_IsSteamRunningOnSteamDeck)
+	purego.RegisterLibFunc(&ptrAPI_ISteamUtils_ShowFloatingGamepadTextInput, lib, flatAPI_ISteamUtils_ShowFloatingGamepadTextInput)
 
 	return lib, nil
 }
@@ -239,333 +127,240 @@ func init() {
 	}
 }
 
-func cBool(x bool) uintptr {
-	if x {
-		return 1
+// Helper function to convert C string pointer to Go string using reflect
+func cStringFromPtr(ptr uintptr) string {
+	if ptr == 0 {
+		return ""
 	}
-	return 0
+
+	// Find the length of the C string
+	length := 0
+	for {
+		if *(*byte)(unsafe.Pointer(ptr + uintptr(length))) == 0 {
+			break
+		}
+		length++
+		// Safety limit to prevent infinite loops
+		if length > 65536 {
+			break
+		}
+	}
+
+	if length == 0 {
+		return ""
+	}
+
+	// Create a byte slice header pointing to the C string
+	var result []byte
+	for i := 0; i < length; i++ {
+		b := *(*byte)(unsafe.Pointer(ptr + uintptr(i)))
+		result = append(result, b)
+	}
+	return string(result)
+}
+
+// Helper function to convert Go string to C string
+func goStringToC(s string) (uintptr, func()) {
+	bytes := append([]byte(s), 0)
+	ptr := uintptr(unsafe.Pointer(&bytes[0]))
+	return ptr, func() { runtime.KeepAlive(bytes) }
 }
 
 func RestartAppIfNecessary(appID uint32) bool {
-	v, err := theLib.call(funcType_Bool_Int32, flatAPI_RestartAppIfNecessary, uintptr(appID))
-	if err != nil {
-		panic(err)
-	}
-	return byte(v) != 0
+	return ptrAPI_RestartAppIfNecessary(appID)
 }
 
 func Init() error {
 	var msg steamErrMsg
-	v, err := theLib.call(funcType_Bool_Ptr, flatAPI_InitFlat, uintptr(unsafe.Pointer(&msg)))
-	if err != nil {
-		panic(err)
-	}
-	if ESteamAPIInitResult(v) != ESteamAPIInitResult_OK {
-		return fmt.Errorf("steamworks: InitFlat failed: %d, %s", ESteamAPIInitResult(v), msg.String())
+	if !ptrAPI_InitFlat(uintptr(unsafe.Pointer(&msg))) {
+		return fmt.Errorf("steamworks: InitFlat failed: %s", msg.String())
 	}
 	return nil
 }
 
 func RunCallbacks() {
-	if _, err := theLib.call(funcType_Void, flatAPI_RunCallbacks); err != nil {
-		panic(err)
-	}
+	ptrAPI_RunCallbacks()
 }
 
 func SteamApps() ISteamApps {
-	v, err := theLib.call(funcType_Ptr, flatAPI_SteamApps)
-	if err != nil {
-		panic(err)
-	}
-	return steamApps(v)
+	return steamApps(ptrAPI_SteamApps())
 }
 
-type steamApps C.uintptr_t
+type steamApps uintptr
 
 func (s steamApps) BGetDLCDataByIndex(iDLC int) (appID AppId_t, available bool, pchName string, success bool) {
 	var name [4096]byte
-	v, err := theLib.call(funcType_Int32_Ptr_Int32_Ptr_Ptr_Ptr_Int32, flatAPI_ISteamApps_BGetDLCDataByIndex, uintptr(s), uintptr(iDLC), uintptr(unsafe.Pointer(&appID)), uintptr(unsafe.Pointer(&available)), uintptr(unsafe.Pointer(&name[0])), uintptr(len(name)))
-	if err != nil {
-		panic(err)
-	}
-	return appID, available, C.GoString((*C.char)(unsafe.Pointer(&name[0]))), byte(v) != 0
+	v := ptrAPI_ISteamApps_BGetDLCDataByIndex(uintptr(s), int32(iDLC), uintptr(unsafe.Pointer(&appID)), uintptr(unsafe.Pointer(&available)), uintptr(unsafe.Pointer(&name[0])), int32(len(name)))
+	return appID, available, string(name[:cStringLen(name[:])]), v
 }
 
 func (s steamApps) BIsDlcInstalled(appID AppId_t) bool {
-	v, err := theLib.call(funcType_Bool_Ptr_Int32, flatAPI_ISteamApps_BIsDlcInstalled, uintptr(s), uintptr(appID))
-	if err != nil {
-		panic(err)
-	}
-	return byte(v) != 0
+	return ptrAPI_ISteamApps_BIsDlcInstalled(uintptr(s), uint32(appID))
 }
 
 func (s steamApps) GetAppInstallDir(appID AppId_t) string {
 	var path [4096]byte
-	v, err := theLib.call(funcType_Int32_Ptr_Int32_Ptr_Int32, flatAPI_ISteamApps_GetAppInstallDir, uintptr(s), uintptr(appID), uintptr(unsafe.Pointer(&path[0])), uintptr(len(path)))
-	if err != nil {
-		panic(err)
-	}
-	if uint32(v) == 0 {
+	v := ptrAPI_ISteamApps_GetAppInstallDir(uintptr(s), uint32(appID), uintptr(unsafe.Pointer(&path[0])), int32(len(path)))
+	if v == 0 {
 		return ""
 	}
-	return string(path[:uint32(v)-1])
+	return string(path[:v-1])
 }
 
 func (s steamApps) GetCurrentGameLanguage() string {
-	v, err := theLib.call(funcType_Ptr_Ptr, flatAPI_ISteamApps_GetCurrentGameLanguage, uintptr(s))
-	if err != nil {
-		panic(err)
+	v := ptrAPI_ISteamApps_GetCurrentGameLanguage(uintptr(s))
+	if v == 0 {
+		return ""
 	}
-	return C.GoString(C.uintptrToChar(C.uintptr_t(v)))
+	return cStringFromPtr(v)
 }
 
 func (s steamApps) GetDLCCount() int32 {
-	v, err := theLib.call(funcType_Int32_Ptr, flatAPI_ISteamApps_GetDLCCount, uintptr(s))
-	if err != nil {
-		panic(err)
+	return ptrAPI_ISteamApps_GetDLCCount(uintptr(s))
+}
+
+// Helper function to find length of C string in byte array
+func cStringLen(b []byte) int {
+	for i, v := range b {
+		if v == 0 {
+			return i
+		}
 	}
-	return int32(v)
+	return len(b)
 }
 
 func SteamFriends() ISteamFriends {
-	v, err := theLib.call(funcType_Ptr, flagAPI_SteamFriends)
-	if err != nil {
-		panic(err)
-	}
-	return steamFriends(v)
+	return steamFriends(ptrAPI_SteamFriends())
 }
 
-type steamFriends C.uintptr_t
+type steamFriends uintptr
 
 func (s steamFriends) GetPersonaName() string {
-	v, err := theLib.call(funcType_Ptr_Ptr, flatAPI_ISteamFriends_GetPersonaName, uintptr(s))
-	if err != nil {
-		panic(err)
+	v := ptrAPI_ISteamFriends_GetPersonaName(uintptr(s))
+	if v == 0 {
+		return ""
 	}
-	return C.GoString(C.uintptrToChar(C.uintptr_t(v)))
+	return cStringFromPtr(v)
 }
 
 func (s steamFriends) SetRichPresence(key, value string) bool {
-	ckey := C.CString(key)
-	defer C.free(unsafe.Pointer(ckey))
-	cvalue := C.CString(value)
-	defer C.free(unsafe.Pointer(cvalue))
-
-	v, err := theLib.call(funcType_Bool_Ptr_Ptr_Ptr, flatAPI_ISteamFriends_SetRichPresence, uintptr(s), uintptr(unsafe.Pointer(ckey)), uintptr(unsafe.Pointer(cvalue)))
-	if err != nil {
-		panic(err)
-	}
-
-	return byte(v) != 0
+	keyPtr, keyCleanup := goStringToC(key)
+	defer keyCleanup()
+	valuePtr, valueCleanup := goStringToC(value)
+	defer valueCleanup()
+	return ptrAPI_ISteamFriends_SetRichPresence(uintptr(s), keyPtr, valuePtr)
 }
 
 func SteamInput() ISteamInput {
-	v, err := theLib.call(funcType_Ptr, flatAPI_SteamInput)
-	if err != nil {
-		panic(err)
-	}
-	return steamInput(v)
+	return steamInput(ptrAPI_SteamInput())
 }
 
-type steamInput C.uintptr_t
+type steamInput uintptr
 
 func (s steamInput) GetConnectedControllers() []InputHandle_t {
 	var handles [_STEAM_INPUT_MAX_COUNT]InputHandle_t
-	v, err := theLib.call(funcType_Int32_Ptr_Ptr, flatAPI_ISteamInput_GetConnectedControllers, uintptr(s), uintptr(unsafe.Pointer(&handles[0])))
-	if err != nil {
-		panic(err)
-	}
+	v := ptrAPI_ISteamInput_GetConnectedControllers(uintptr(s), uintptr(unsafe.Pointer(&handles[0])))
 	return handles[:int(v)]
 }
 
 func (s steamInput) GetInputTypeForHandle(inputHandle InputHandle_t) ESteamInputType {
-	v, err := theLib.call(funcType_Int32_Ptr_Int64, flatAPI_ISteamInput_GetInputTypeForHandle, uintptr(s), uintptr(inputHandle))
-	if err != nil {
-		panic(err)
-	}
+	v := ptrAPI_ISteamInput_GetInputTypeForHandle(uintptr(s), uint64(inputHandle))
 	return ESteamInputType(v)
 }
 
 func (s steamInput) Init(bExplicitlyCallRunFrame bool) bool {
-	var callRunFrame uintptr
-	if bExplicitlyCallRunFrame {
-		callRunFrame = 1
-	}
-	v, err := theLib.call(funcType_Bool_Ptr_Bool, flatAPI_ISteamInput_Init, uintptr(s), callRunFrame)
-	if err != nil {
-		panic(err)
-	}
-	return byte(v) != 0
+	return ptrAPI_ISteamInput_Init(uintptr(s), bExplicitlyCallRunFrame)
 }
 
 func (s steamInput) RunFrame() {
-	if _, err := theLib.call(funcType_Void_Ptr_Bool, flatAPI_ISteamInput_RunFrame, uintptr(s), 0); err != nil {
-		panic(err)
-	}
+	ptrAPI_ISteamInput_RunFrame(uintptr(s), false)
 }
 
 func SteamRemoteStorage() ISteamRemoteStorage {
-	v, err := theLib.call(funcType_Ptr, flatAPI_SteamRemoteStorage)
-	if err != nil {
-		panic(err)
-	}
-	return steamRemoteStorage(v)
+	return steamRemoteStorage(ptrAPI_SteamRemoteStorage())
 }
 
-type steamRemoteStorage C.uintptr_t
+type steamRemoteStorage uintptr
 
 func (s steamRemoteStorage) FileWrite(file string, data []byte) bool {
-	cfile := C.CString(file)
-	defer C.free(unsafe.Pointer(cfile))
-
-	defer runtime.KeepAlive(data)
-
-	v, err := theLib.call(funcType_Bool_Ptr_Ptr_Ptr_Int32, flatAPI_ISteamRemoteStorage_FileWrite, uintptr(s), uintptr(unsafe.Pointer(cfile)), uintptr(unsafe.Pointer(&data[0])), uintptr(len(data)))
-	if err != nil {
-		panic(err)
-	}
-	return byte(v) != 0
+	filePtr, fileCleanup := goStringToC(file)
+	defer fileCleanup()
+	runtime.KeepAlive(data)
+	return ptrAPI_ISteamRemoteStorage_FileWrite(uintptr(s), filePtr, uintptr(unsafe.Pointer(&data[0])), int32(len(data)))
 }
 
 func (s steamRemoteStorage) FileRead(file string, data []byte) int32 {
-	cfile := C.CString(file)
-	defer C.free(unsafe.Pointer(cfile))
-
-	defer runtime.KeepAlive(data)
-
-	v, err := theLib.call(funcType_Int32_Ptr_Ptr_Ptr_Int32, flatAPI_ISteamRemoteStorage_FileRead, uintptr(s), uintptr(unsafe.Pointer(cfile)), uintptr(unsafe.Pointer(&data[0])), uintptr(len(data)))
-	if err != nil {
-		panic(err)
-	}
-	return int32(v)
+	filePtr, fileCleanup := goStringToC(file)
+	defer fileCleanup()
+	runtime.KeepAlive(data)
+	return ptrAPI_ISteamRemoteStorage_FileRead(uintptr(s), filePtr, uintptr(unsafe.Pointer(&data[0])), int32(len(data)))
 }
 
 func (s steamRemoteStorage) FileDelete(file string) bool {
-	cfile := C.CString(file)
-	defer C.free(unsafe.Pointer(cfile))
-
-	v, err := theLib.call(funcType_Bool_Ptr_Ptr, flatAPI_ISteamRemoteStorage_FileDelete, uintptr(s), uintptr(unsafe.Pointer(cfile)))
-	if err != nil {
-		panic(err)
-	}
-	return byte(v) != 0
+	filePtr, fileCleanup := goStringToC(file)
+	defer fileCleanup()
+	return ptrAPI_ISteamRemoteStorage_FileDelete(uintptr(s), filePtr)
 }
 
 func (s steamRemoteStorage) GetFileSize(file string) int32 {
-	cfile := C.CString(file)
-	defer C.free(unsafe.Pointer(cfile))
-
-	v, err := theLib.call(funcType_Int32_Ptr, flatAPI_ISteamRemoteStorage_GetFileSize, uintptr(s), uintptr(unsafe.Pointer(cfile)))
-	if err != nil {
-		panic(err)
-	}
-	return int32(v)
+	filePtr, fileCleanup := goStringToC(file)
+	defer fileCleanup()
+	return ptrAPI_ISteamRemoteStorage_GetFileSize(uintptr(s), filePtr)
 }
 
 func SteamUser() ISteamUser {
-	v, err := theLib.call(funcType_Ptr, flatAPI_SteamUser)
-	if err != nil {
-		panic(err)
-	}
-	return steamUser(v)
+	return steamUser(ptrAPI_SteamUser())
 }
 
-type steamUser C.uintptr_t
+type steamUser uintptr
 
 func (s steamUser) GetSteamID() CSteamID {
-	v, err := theLib.call(funcType_Int64_Ptr, flatAPI_ISteamUser_GetSteamID, uintptr(s))
-	if err != nil {
-		panic(err)
-	}
-	return CSteamID(v)
+	return CSteamID(ptrAPI_ISteamUser_GetSteamID(uintptr(s)))
 }
 
 func SteamUserStats() ISteamUserStats {
-	v, err := theLib.call(funcType_Ptr, flatAPI_SteamUserStats)
-	if err != nil {
-		panic(err)
-	}
-	return steamUserStats(v)
+	return steamUserStats(ptrAPI_SteamUserStats())
 }
 
-type steamUserStats C.uintptr_t
+type steamUserStats uintptr
 
 func (s steamUserStats) GetAchievement(name string) (achieved, success bool) {
-	cname := C.CString(name)
-	defer C.free(unsafe.Pointer(cname))
-
-	v, err := theLib.call(funcType_Bool_Ptr_Ptr_Ptr, flatAPI_ISteamUserStats_GetAchievement, uintptr(s), uintptr(unsafe.Pointer(cname)), uintptr(unsafe.Pointer(&achieved)))
-	if err != nil {
-		panic(err)
-	}
-	success = byte(v) != 0
-
+	namePtr, nameCleanup := goStringToC(name)
+	defer nameCleanup()
+	success = ptrAPI_ISteamUserStats_GetAchievement(uintptr(s), namePtr, uintptr(unsafe.Pointer(&achieved)))
 	return
 }
 
 func (s steamUserStats) SetAchievement(name string) bool {
-	cname := C.CString(name)
-	defer C.free(unsafe.Pointer(cname))
-
-	v, err := theLib.call(funcType_Bool_Ptr_Ptr, flatAPI_ISteamUserStats_SetAchievement, uintptr(s), uintptr(unsafe.Pointer(cname)))
-	if err != nil {
-		panic(err)
-	}
-
-	return byte(v) != 0
+	namePtr, nameCleanup := goStringToC(name)
+	defer nameCleanup()
+	return ptrAPI_ISteamUserStats_SetAchievement(uintptr(s), namePtr)
 }
 
 func (s steamUserStats) ClearAchievement(name string) bool {
-	cname := C.CString(name)
-	defer C.free(unsafe.Pointer(cname))
-
-	v, err := theLib.call(funcType_Bool_Ptr_Ptr, flatAPI_ISteamUserStats_ClearAchievement, uintptr(s), uintptr(unsafe.Pointer(cname)))
-	if err != nil {
-		panic(err)
-	}
-
-	return byte(v) != 0
+	namePtr, nameCleanup := goStringToC(name)
+	defer nameCleanup()
+	return ptrAPI_ISteamUserStats_ClearAchievement(uintptr(s), namePtr)
 }
 
 func (s steamUserStats) StoreStats() bool {
-	v, err := theLib.call(funcType_Bool_Ptr, flatAPI_ISteamUserStats_StoreStats, uintptr(s))
-	if err != nil {
-		panic(err)
-	}
-
-	return byte(v) != 0
+	return ptrAPI_ISteamUserStats_StoreStats(uintptr(s))
 }
 
 func SteamUtils() ISteamUtils {
-	v, err := theLib.call(funcType_Ptr, flatAPI_SteamUtils)
-	if err != nil {
-		panic(err)
-	}
-	return steamUtils(v)
+	return steamUtils(ptrAPI_SteamUtils())
 }
 
-type steamUtils C.uintptr_t
+type steamUtils uintptr
 
 func (s steamUtils) IsOverlayEnabled() bool {
-	v, err := theLib.call(funcType_Bool_Ptr, flatAPI_ISteamUtils_IsOverlayEnabled, uintptr(s))
-	if err != nil {
-		panic(err)
-	}
-	return byte(v) != 0
+	return ptrAPI_ISteamUtils_IsOverlayEnabled(uintptr(s))
 }
 
 func (s steamUtils) IsSteamRunningOnSteamDeck() bool {
-	v, err := theLib.call(funcType_Bool_Ptr, flatAPI_ISteamUtils_IsSteamRunningOnSteamDeck, uintptr(s))
-	if err != nil {
-		panic(err)
-	}
-	return byte(v) != 0
+	return ptrAPI_ISteamUtils_IsSteamRunningOnSteamDeck(uintptr(s))
 }
 
 func (s steamUtils) ShowFloatingGamepadTextInput(keyboardMode EFloatingGamepadTextInputMode, textFieldXPosition, textFieldYPosition, textFieldWidth, textFieldHeight int32) bool {
-	v, err := theLib.call(funcType_Bool_Ptr_Int32_Int32_Int32_Int32_Int32, flatAPI_ISteamUtils_ShowFloatingGamepadTextInput, uintptr(s), uintptr(keyboardMode), uintptr(textFieldXPosition), uintptr(textFieldYPosition), uintptr(textFieldWidth), uintptr(textFieldHeight))
-	if err != nil {
-		panic(err)
-	}
-	return byte(v) != 0
+	return ptrAPI_ISteamUtils_ShowFloatingGamepadTextInput(uintptr(s), int32(keyboardMode), textFieldXPosition, textFieldYPosition, textFieldWidth, textFieldHeight)
 }
