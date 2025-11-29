@@ -154,7 +154,7 @@ func (s steamApps) GetDLCCount() int32 {
 }
 
 func SteamFriends() ISteamFriends {
-	v, err := theDLL.call(flagAPI_SteamFriends)
+	v, err := theDLL.call(flatAPI_SteamFriends)
 	if err != nil {
 		panic(err)
 	}

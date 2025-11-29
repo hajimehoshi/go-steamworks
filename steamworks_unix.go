@@ -72,7 +72,7 @@ func loadLib() (uintptr, error) {
 		return 0, err
 	}
 
-	lib, err := purego.Dlopen(path, purego.RTLD_LAZY)
+	lib, err := purego.Dlopen(path, purego.RTLD_NOW|purego.RTLD_LOCAL)
 	if err != nil {
 		return 0, fmt.Errorf("steamworks: dlopen failed: %w", err)
 	}
@@ -87,7 +87,7 @@ func loadLib() (uintptr, error) {
 	purego.RegisterLibFunc(&ptrAPI_ISteamApps_GetAppInstallDir, lib, flatAPI_ISteamApps_GetAppInstallDir)
 	purego.RegisterLibFunc(&ptrAPI_ISteamApps_GetCurrentGameLanguage, lib, flatAPI_ISteamApps_GetCurrentGameLanguage)
 	purego.RegisterLibFunc(&ptrAPI_ISteamApps_GetDLCCount, lib, flatAPI_ISteamApps_GetDLCCount)
-	purego.RegisterLibFunc(&ptrAPI_SteamFriends, lib, flagAPI_SteamFriends)
+	purego.RegisterLibFunc(&ptrAPI_SteamFriends, lib, flatAPI_SteamFriends)
 	purego.RegisterLibFunc(&ptrAPI_ISteamFriends_GetPersonaName, lib, flatAPI_ISteamFriends_GetPersonaName)
 	purego.RegisterLibFunc(&ptrAPI_ISteamFriends_SetRichPresence, lib, flatAPI_ISteamFriends_SetRichPresence)
 	purego.RegisterLibFunc(&ptrAPI_SteamInput, lib, flatAPI_SteamInput)
