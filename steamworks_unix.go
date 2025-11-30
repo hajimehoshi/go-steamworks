@@ -27,8 +27,8 @@ var (
 	ptrAPI_RunCallbacks                             func()
 	ptrAPI_SteamApps                                func() uintptr
 	ptrAPI_ISteamApps_BGetDLCDataByIndex            func(uintptr, int32, uintptr, uintptr, uintptr, int32) bool
-	ptrAPI_ISteamApps_BIsDlcInstalled               func(uintptr, uint32) bool
-	ptrAPI_ISteamApps_GetAppInstallDir              func(uintptr, uint32, uintptr, int32) int32
+	ptrAPI_ISteamApps_BIsDlcInstalled               func(uintptr, AppId_t) bool
+	ptrAPI_ISteamApps_GetAppInstallDir              func(uintptr, AppId_t, uintptr, int32) int32
 	ptrAPI_ISteamApps_GetCurrentGameLanguage        func(uintptr) uintptr
 	ptrAPI_ISteamApps_GetDLCCount                   func(uintptr) int32
 	ptrAPI_SteamFriends                             func() uintptr
@@ -36,7 +36,7 @@ var (
 	ptrAPI_ISteamFriends_SetRichPresence            func(uintptr, uintptr, uintptr) bool
 	ptrAPI_SteamInput                               func() uintptr
 	ptrAPI_ISteamInput_GetConnectedControllers      func(uintptr, uintptr) int32
-	ptrAPI_ISteamInput_GetInputTypeForHandle        func(uintptr, uint64) int32
+	ptrAPI_ISteamInput_GetInputTypeForHandle        func(uintptr, InputHandle_t) int32
 	ptrAPI_ISteamInput_Init                         func(uintptr, bool) bool
 	ptrAPI_ISteamInput_RunFrame                     func(uintptr, bool)
 	ptrAPI_SteamRemoteStorage                       func() uintptr
@@ -45,7 +45,7 @@ var (
 	ptrAPI_ISteamRemoteStorage_FileDelete           func(uintptr, uintptr) bool
 	ptrAPI_ISteamRemoteStorage_GetFileSize          func(uintptr, uintptr) int32
 	ptrAPI_SteamUser                                func() uintptr
-	ptrAPI_ISteamUser_GetSteamID                    func(uintptr) uint64
+	ptrAPI_ISteamUser_GetSteamID                    func(uintptr) CSteamID
 	ptrAPI_SteamUserStats                           func() uintptr
 	ptrAPI_ISteamUserStats_GetAchievement           func(uintptr, uintptr, uintptr) bool
 	ptrAPI_ISteamUserStats_SetAchievement           func(uintptr, uintptr) bool
@@ -54,7 +54,7 @@ var (
 	ptrAPI_SteamUtils                               func() uintptr
 	ptrAPI_ISteamUtils_IsOverlayEnabled             func(uintptr) bool
 	ptrAPI_ISteamUtils_IsSteamRunningOnSteamDeck    func(uintptr) bool
-	ptrAPI_ISteamUtils_ShowFloatingGamepadTextInput func(uintptr, int32, int32, int32, int32, int32) bool
+	ptrAPI_ISteamUtils_ShowFloatingGamepadTextInput func(uintptr, EFloatingGamepadTextInputMode, int32, int32, int32, int32) bool
 )
 
 func loadLib() (uintptr, error) {
@@ -195,12 +195,12 @@ func (s steamApps) BGetDLCDataByIndex(iDLC int) (appID AppId_t, available bool, 
 }
 
 func (s steamApps) BIsDlcInstalled(appID AppId_t) bool {
-	return ptrAPI_ISteamApps_BIsDlcInstalled(uintptr(s), uint32(appID))
+	return ptrAPI_ISteamApps_BIsDlcInstalled(uintptr(s), appID)
 }
 
 func (s steamApps) GetAppInstallDir(appID AppId_t) string {
 	var path [4096]byte
-	v := ptrAPI_ISteamApps_GetAppInstallDir(uintptr(s), uint32(appID), uintptr(unsafe.Pointer(&path[0])), int32(len(path)))
+	v := ptrAPI_ISteamApps_GetAppInstallDir(uintptr(s), appID, uintptr(unsafe.Pointer(&path[0])), int32(len(path)))
 	if v == 0 {
 		return ""
 	}
@@ -264,7 +264,7 @@ func (s steamInput) GetConnectedControllers() []InputHandle_t {
 }
 
 func (s steamInput) GetInputTypeForHandle(inputHandle InputHandle_t) ESteamInputType {
-	v := ptrAPI_ISteamInput_GetInputTypeForHandle(uintptr(s), uint64(inputHandle))
+	v := ptrAPI_ISteamInput_GetInputTypeForHandle(uintptr(s), inputHandle)
 	return ESteamInputType(v)
 }
 
@@ -362,5 +362,5 @@ func (s steamUtils) IsSteamRunningOnSteamDeck() bool {
 }
 
 func (s steamUtils) ShowFloatingGamepadTextInput(keyboardMode EFloatingGamepadTextInputMode, textFieldXPosition, textFieldYPosition, textFieldWidth, textFieldHeight int32) bool {
-	return ptrAPI_ISteamUtils_ShowFloatingGamepadTextInput(uintptr(s), int32(keyboardMode), textFieldXPosition, textFieldYPosition, textFieldWidth, textFieldHeight)
+	return ptrAPI_ISteamUtils_ShowFloatingGamepadTextInput(uintptr(s), keyboardMode, textFieldXPosition, textFieldYPosition, textFieldWidth, textFieldHeight)
 }
