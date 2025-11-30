@@ -127,47 +127,6 @@ func init() {
 	}
 }
 
-// Helper function to convert C string pointer to Go string using reflect
-func cStringToGo(ptr uintptr) string {
-	if ptr == 0 {
-		return ""
-	}
-
-    basePtr := unsafe.Pointer(ptr)
-
-	// Find the length of the C string
-	length := 0
-	for {
-		if *(*byte)(unsafe.Add(basePtr, length)) == 0 {
-			break
-		}
-		length++
-		// Safety limit to prevent infinite loops
-		if length > 65536 {
-			break
-		}
-	}
-
-	if length == 0 {
-		return ""
-	}
-
-	// Create a byte slice header pointing to the C string
-	var result []byte
-	for i := 0; i < length; i++ {
-		b := *(*byte)(unsafe.Add(basePtr, i))
-		result = append(result, b)
-	}
-	return string(unsafe.Slice((*byte)(basePtr), length))
-}
-
-// Helper function to convert Go string to C string
-func goStringToC(s string) (uintptr, func()) {
-	bytes := append([]byte(s), 0)
-	ptr := uintptr(unsafe.Pointer(&bytes[0]))
-	return ptr, func() { runtime.KeepAlive(bytes) }
-}
-
 func RestartAppIfNecessary(appID uint32) bool {
 	return ptrAPI_RestartAppIfNecessary(appID)
 }
@@ -193,7 +152,7 @@ type steamApps uintptr
 func (s steamApps) BGetDLCDataByIndex(iDLC int) (appID AppId_t, available bool, pchName string, success bool) {
 	var name [4096]byte
 	v := ptrAPI_ISteamApps_BGetDLCDataByIndex(uintptr(s), int32(iDLC), uintptr(unsafe.Pointer(&appID)), uintptr(unsafe.Pointer(&available)), uintptr(unsafe.Pointer(&name[0])), int32(len(name)))
-	return appID, available, string(name[:cStringLen(name[:])]), v
+	return appID, available, cStringToGoString(uintptr(unsafe.Pointer(&name[0])), len(name)), v
 }
 
 func (s steamApps) BIsDlcInstalled(appID AppId_t) bool {
@@ -214,7 +173,7 @@ func (s steamApps) GetCurrentGameLanguage() string {
 	if v == 0 {
 		return ""
 	}
-	return cStringToGo(v)
+	return cStringToGoString(v, 256)
 }
 
 func (s steamApps) GetDLCCount() int32 {
@@ -242,13 +201,13 @@ func (s steamFriends) GetPersonaName() string {
 	if v == 0 {
 		return ""
 	}
-	return cStringToGo(v)
+	return cStringToGoString(v, 64)
 }
 
 func (s steamFriends) SetRichPresence(key, value string) bool {
-	keyPtr, keyCleanup := goStringToC(key)
+	keyPtr, keyCleanup := goStringToCString(key)
 	defer keyCleanup()
-	valuePtr, valueCleanup := goStringToC(value)
+	valuePtr, valueCleanup := goStringToCString(value)
 	defer valueCleanup()
 	return ptrAPI_ISteamFriends_SetRichPresence(uintptr(s), keyPtr, valuePtr)
 }
@@ -285,27 +244,27 @@ func SteamRemoteStorage() ISteamRemoteStorage {
 type steamRemoteStorage uintptr
 
 func (s steamRemoteStorage) FileWrite(file string, data []byte) bool {
-	filePtr, fileCleanup := goStringToC(file)
+	filePtr, fileCleanup := goStringToCString(file)
 	defer fileCleanup()
 	runtime.KeepAlive(data)
 	return ptrAPI_ISteamRemoteStorage_FileWrite(uintptr(s), filePtr, uintptr(unsafe.Pointer(&data[0])), int32(len(data)))
 }
 
 func (s steamRemoteStorage) FileRead(file string, data []byte) int32 {
-	filePtr, fileCleanup := goStringToC(file)
+	filePtr, fileCleanup := goStringToCString(file)
 	defer fileCleanup()
 	runtime.KeepAlive(data)
 	return ptrAPI_ISteamRemoteStorage_FileRead(uintptr(s), filePtr, uintptr(unsafe.Pointer(&data[0])), int32(len(data)))
 }
 
 func (s steamRemoteStorage) FileDelete(file string) bool {
-	filePtr, fileCleanup := goStringToC(file)
+	filePtr, fileCleanup := goStringToCString(file)
 	defer fileCleanup()
 	return ptrAPI_ISteamRemoteStorage_FileDelete(uintptr(s), filePtr)
 }
 
 func (s steamRemoteStorage) GetFileSize(file string) int32 {
-	filePtr, fileCleanup := goStringToC(file)
+	filePtr, fileCleanup := goStringToCString(file)
 	defer fileCleanup()
 	return ptrAPI_ISteamRemoteStorage_GetFileSize(uintptr(s), filePtr)
 }
@@ -327,20 +286,20 @@ func SteamUserStats() ISteamUserStats {
 type steamUserStats uintptr
 
 func (s steamUserStats) GetAchievement(name string) (achieved, success bool) {
-	namePtr, nameCleanup := goStringToC(name)
+	namePtr, nameCleanup := goStringToCString(name)
 	defer nameCleanup()
 	success = ptrAPI_ISteamUserStats_GetAchievement(uintptr(s), namePtr, uintptr(unsafe.Pointer(&achieved)))
 	return
 }
 
 func (s steamUserStats) SetAchievement(name string) bool {
-	namePtr, nameCleanup := goStringToC(name)
+	namePtr, nameCleanup := goStringToCString(name)
 	defer nameCleanup()
 	return ptrAPI_ISteamUserStats_SetAchievement(uintptr(s), namePtr)
 }
 
 func (s steamUserStats) ClearAchievement(name string) bool {
-	namePtr, nameCleanup := goStringToC(name)
+	namePtr, nameCleanup := goStringToCString(name)
 	defer nameCleanup()
 	return ptrAPI_ISteamUserStats_ClearAchievement(uintptr(s), namePtr)
 }
