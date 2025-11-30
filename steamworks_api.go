@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-FileCopyrightText: 2021 The go-steamworks Authors
 
-//go:build !windows
-
 package steamworks
 
 import (
@@ -156,16 +154,6 @@ func (s steamApps) GetCurrentGameLanguage() string {
 
 func (s steamApps) GetDLCCount() int32 {
 	return ptrAPI_ISteamApps_GetDLCCount(uintptr(s))
-}
-
-// Helper function to find length of C string in byte array
-func cStringLen(b []byte) int {
-	for i, v := range b {
-		if v == 0 {
-			return i
-		}
-	}
-	return len(b)
 }
 
 func SteamFriends() ISteamFriends {
