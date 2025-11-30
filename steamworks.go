@@ -116,7 +116,7 @@ const (
 	flatAPI_SteamInput                          = "SteamAPI_SteamInput_v006"
 	flatAPI_ISteamInput_GetConnectedControllers = "SteamAPI_ISteamInput_GetConnectedControllers"
 	flatAPI_ISteamInput_GetInputTypeForHandle   = "SteamAPI_ISteamInput_GetInputTypeForHandle"
-	flatAPI_ISteamInput_Init                    = "SteamAPI_ISteamInput_Init"
+	flagAPI_ISteamInput_Init                    = "SteamAPI_ISteamInput_Init"
 	flatAPI_ISteamInput_RunFrame                = "SteamAPI_ISteamInput_RunFrame"
 
 	flatAPI_SteamRemoteStorage              = "SteamAPI_SteamRemoteStorage_v016"

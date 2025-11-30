@@ -204,7 +204,7 @@ func (s steamInput) Init(bExplicitlyCallRunFrame bool) bool {
 		callRunFrame = 1
 	}
 	// The error value seems unreliable.
-	v, _ := theDLL.call(flatAPI_ISteamInput_Init, uintptr(s), callRunFrame)
+	v, _ := theDLL.call(flagAPI_ISteamInput_Init, uintptr(s), callRunFrame)
 	return byte(v) != 0
 }
 
