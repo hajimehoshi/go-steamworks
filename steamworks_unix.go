@@ -128,15 +128,17 @@ func init() {
 }
 
 // Helper function to convert C string pointer to Go string using reflect
-func cStringFromPtr(ptr uintptr) string {
+func cStringToGo(ptr uintptr) string {
 	if ptr == 0 {
 		return ""
 	}
 
+    basePtr := unsafe.Pointer(ptr)
+
 	// Find the length of the C string
 	length := 0
 	for {
-		if *(*byte)(unsafe.Pointer(ptr + uintptr(length))) == 0 {
+		if *(*byte)(unsafe.Add(basePtr, length)) == 0 {
 			break
 		}
 		length++
@@ -153,10 +155,10 @@ func cStringFromPtr(ptr uintptr) string {
 	// Create a byte slice header pointing to the C string
 	var result []byte
 	for i := 0; i < length; i++ {
-		b := *(*byte)(unsafe.Pointer(ptr + uintptr(i)))
+		b := *(*byte)(unsafe.Add(basePtr, i))
 		result = append(result, b)
 	}
-	return string(result)
+	return string(unsafe.Slice((*byte)(basePtr), length))
 }
 
 // Helper function to convert Go string to C string
@@ -212,7 +214,7 @@ func (s steamApps) GetCurrentGameLanguage() string {
 	if v == 0 {
 		return ""
 	}
-	return cStringFromPtr(v)
+	return cStringToGo(v)
 }
 
 func (s steamApps) GetDLCCount() int32 {
@@ -240,7 +242,7 @@ func (s steamFriends) GetPersonaName() string {
 	if v == 0 {
 		return ""
 	}
-	return cStringFromPtr(v)
+	return cStringToGo(v)
 }
 
 func (s steamFriends) SetRichPresence(key, value string) bool {
