@@ -11,8 +11,6 @@ import (
 	"golang.org/x/sys/windows"
 )
 
-const is32Bit = unsafe.Sizeof(int(0)) == 4
-
 type dll struct {
 	d     *windows.LazyDLL
 	procs map[string]*windows.LazyProc

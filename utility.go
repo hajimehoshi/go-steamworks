@@ -5,6 +5,8 @@ import (
 	"unsafe"
 )
 
+const is32Bit = unsafe.Sizeof(int(0)) == 4
+
 func cStringToGoString(v uintptr, sizeHint int) string {
 	bs := make([]byte, 0, sizeHint)
 	for i := int32(0); ; i++ {
