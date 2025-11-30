@@ -1,11 +1,12 @@
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileCopyrightText: 2025 The go-steamworks Authors
+
 package steamworks
 
 import (
 	"runtime"
 	"unsafe"
 )
-
-const is32Bit = unsafe.Sizeof(int(0)) == 4
 
 func cStringToGoString(v uintptr, sizeHint int) string {
 	bs := make([]byte, 0, sizeHint)

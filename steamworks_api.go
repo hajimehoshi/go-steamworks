@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
-// SPDX-FileCopyrightText: 2021 The go-steamworks Authors
+// SPDX-FileCopyrightText: 2025 The go-steamworks Authors
 
 package steamworks
 
 import (
-	_ "embed"
 	"fmt"
 	"runtime"
 	"unsafe"
@@ -17,7 +16,6 @@ type lib struct {
 }
 
 var (
-	// Steam API function pointers - using different names to avoid conflicts with constants
 	ptrAPI_RestartAppIfNecessary                    func(uint32) bool
 	ptrAPI_InitFlat                                 func(uintptr) ESteamAPIInitResult
 	ptrAPI_RunCallbacks                             func()
@@ -54,7 +52,7 @@ var (
 )
 
 func registerFunctions(lib uintptr) {
-		// Register all Steam API function pointers
+	// Register all Steam API function pointers
 	purego.RegisterLibFunc(&ptrAPI_RestartAppIfNecessary, lib, flatAPI_RestartAppIfNecessary)
 	purego.RegisterLibFunc(&ptrAPI_InitFlat, lib, flatAPI_InitFlat)
 	purego.RegisterLibFunc(&ptrAPI_RunCallbacks, lib, flatAPI_RunCallbacks)
