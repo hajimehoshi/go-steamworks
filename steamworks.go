@@ -109,7 +109,7 @@ const (
 	flatAPI_ISteamApps_GetCurrentGameLanguage = "SteamAPI_ISteamApps_GetCurrentGameLanguage"
 	flatAPI_ISteamApps_GetDLCCount            = "SteamAPI_ISteamApps_GetDLCCount"
 
-	flagAPI_SteamFriends                  = "SteamAPI_SteamFriends_v017"
+	flatAPI_SteamFriends                  = "SteamAPI_SteamFriends_v017"
 	flatAPI_ISteamFriends_GetPersonaName  = "SteamAPI_ISteamFriends_GetPersonaName"
 	flatAPI_ISteamFriends_SetRichPresence = "SteamAPI_ISteamFriends_SetRichPresence"
 
