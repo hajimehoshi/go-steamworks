@@ -15,35 +15,50 @@ type lib struct {
 }
 
 var (
-	ptrAPI_RestartAppIfNecessary                    func(uint32) bool
-	ptrAPI_InitFlat                                 func(uintptr) ESteamAPIInitResult
-	ptrAPI_RunCallbacks                             func()
-	ptrAPI_SteamApps                                func() uintptr
-	ptrAPI_ISteamApps_BGetDLCDataByIndex            func(uintptr, int32, uintptr, uintptr, uintptr, int32) bool
-	ptrAPI_ISteamApps_BIsDlcInstalled               func(uintptr, AppId_t) bool
-	ptrAPI_ISteamApps_GetAppInstallDir              func(uintptr, AppId_t, uintptr, int32) int32
-	ptrAPI_ISteamApps_GetCurrentGameLanguage        func(uintptr) string
-	ptrAPI_ISteamApps_GetDLCCount                   func(uintptr) int32
-	ptrAPI_SteamFriends                             func() uintptr
-	ptrAPI_ISteamFriends_GetPersonaName             func(uintptr) string
-	ptrAPI_ISteamFriends_SetRichPresence            func(uintptr, string, string) bool
-	ptrAPI_SteamInput                               func() uintptr
-	ptrAPI_ISteamInput_GetConnectedControllers      func(uintptr, uintptr) int32
-	ptrAPI_ISteamInput_GetInputTypeForHandle        func(uintptr, InputHandle_t) int32
-	ptrAPI_ISteamInput_Init                         func(uintptr, bool) bool
-	ptrAPI_ISteamInput_RunFrame                     func(uintptr, bool)
-	ptrAPI_SteamRemoteStorage                       func() uintptr
-	ptrAPI_ISteamRemoteStorage_FileWrite            func(uintptr, string, uintptr, int32) bool
-	ptrAPI_ISteamRemoteStorage_FileRead             func(uintptr, string, uintptr, int32) int32
-	ptrAPI_ISteamRemoteStorage_FileDelete           func(uintptr, string) bool
-	ptrAPI_ISteamRemoteStorage_GetFileSize          func(uintptr, string) int32
-	ptrAPI_SteamUser                                func() uintptr
-	ptrAPI_ISteamUser_GetSteamID                    func(uintptr) CSteamID
-	ptrAPI_SteamUserStats                           func() uintptr
-	ptrAPI_ISteamUserStats_GetAchievement           func(uintptr, string, uintptr) bool
-	ptrAPI_ISteamUserStats_SetAchievement           func(uintptr, string) bool
-	ptrAPI_ISteamUserStats_ClearAchievement         func(uintptr, string) bool
-	ptrAPI_ISteamUserStats_StoreStats               func(uintptr) bool
+	// General
+	ptrAPI_RestartAppIfNecessary func(uint32) bool
+	ptrAPI_InitFlat              func(uintptr) ESteamAPIInitResult
+	ptrAPI_RunCallbacks          func()
+
+	// ISteamApps
+	ptrAPI_SteamApps                         func() uintptr
+	ptrAPI_ISteamApps_BGetDLCDataByIndex     func(uintptr, int32, uintptr, uintptr, uintptr, int32) bool
+	ptrAPI_ISteamApps_BIsDlcInstalled        func(uintptr, AppId_t) bool
+	ptrAPI_ISteamApps_GetAppInstallDir       func(uintptr, AppId_t, uintptr, int32) int32
+	ptrAPI_ISteamApps_GetCurrentGameLanguage func(uintptr) string
+	ptrAPI_ISteamApps_GetDLCCount            func(uintptr) int32
+
+	// ISteamFriends
+	ptrAPI_SteamFriends                  func() uintptr
+	ptrAPI_ISteamFriends_GetPersonaName  func(uintptr) string
+	ptrAPI_ISteamFriends_SetRichPresence func(uintptr, string, string) bool
+
+	// ISteamInput
+	ptrAPI_SteamInput                          func() uintptr
+	ptrAPI_ISteamInput_GetConnectedControllers func(uintptr, uintptr) int32
+	ptrAPI_ISteamInput_GetInputTypeForHandle   func(uintptr, InputHandle_t) int32
+	ptrAPI_ISteamInput_Init                    func(uintptr, bool) bool
+	ptrAPI_ISteamInput_RunFrame                func(uintptr, bool)
+
+	// ISteamRemoteStorage
+	ptrAPI_SteamRemoteStorage              func() uintptr
+	ptrAPI_ISteamRemoteStorage_FileWrite   func(uintptr, string, uintptr, int32) bool
+	ptrAPI_ISteamRemoteStorage_FileRead    func(uintptr, string, uintptr, int32) int32
+	ptrAPI_ISteamRemoteStorage_FileDelete  func(uintptr, string) bool
+	ptrAPI_ISteamRemoteStorage_GetFileSize func(uintptr, string) int32
+
+	// ISteamUser
+	ptrAPI_SteamUser             func() uintptr
+	ptrAPI_ISteamUser_GetSteamID func(uintptr) CSteamID
+
+	// ISteamUserStats
+	ptrAPI_SteamUserStats                   func() uintptr
+	ptrAPI_ISteamUserStats_GetAchievement   func(uintptr, string, uintptr) bool
+	ptrAPI_ISteamUserStats_SetAchievement   func(uintptr, string) bool
+	ptrAPI_ISteamUserStats_ClearAchievement func(uintptr, string) bool
+	ptrAPI_ISteamUserStats_StoreStats       func(uintptr) bool
+
+	// ISteamUtils
 	ptrAPI_SteamUtils                               func() uintptr
 	ptrAPI_ISteamUtils_IsOverlayEnabled             func(uintptr) bool
 	ptrAPI_ISteamUtils_IsSteamRunningOnSteamDeck    func(uintptr) bool
@@ -51,36 +66,50 @@ var (
 )
 
 func registerFunctions(lib uintptr) {
-	// Register all Steam API function pointers
+	// General
 	purego.RegisterLibFunc(&ptrAPI_RestartAppIfNecessary, lib, flatAPI_RestartAppIfNecessary)
 	purego.RegisterLibFunc(&ptrAPI_InitFlat, lib, flatAPI_InitFlat)
 	purego.RegisterLibFunc(&ptrAPI_RunCallbacks, lib, flatAPI_RunCallbacks)
+
+	// ISteamApps
 	purego.RegisterLibFunc(&ptrAPI_SteamApps, lib, flatAPI_SteamApps)
 	purego.RegisterLibFunc(&ptrAPI_ISteamApps_BGetDLCDataByIndex, lib, flatAPI_ISteamApps_BGetDLCDataByIndex)
 	purego.RegisterLibFunc(&ptrAPI_ISteamApps_BIsDlcInstalled, lib, flatAPI_ISteamApps_BIsDlcInstalled)
 	purego.RegisterLibFunc(&ptrAPI_ISteamApps_GetAppInstallDir, lib, flatAPI_ISteamApps_GetAppInstallDir)
 	purego.RegisterLibFunc(&ptrAPI_ISteamApps_GetCurrentGameLanguage, lib, flatAPI_ISteamApps_GetCurrentGameLanguage)
 	purego.RegisterLibFunc(&ptrAPI_ISteamApps_GetDLCCount, lib, flatAPI_ISteamApps_GetDLCCount)
+
+	// ISteamFriends
 	purego.RegisterLibFunc(&ptrAPI_SteamFriends, lib, flatAPI_SteamFriends)
 	purego.RegisterLibFunc(&ptrAPI_ISteamFriends_GetPersonaName, lib, flatAPI_ISteamFriends_GetPersonaName)
 	purego.RegisterLibFunc(&ptrAPI_ISteamFriends_SetRichPresence, lib, flatAPI_ISteamFriends_SetRichPresence)
+
+	// ISteamInput
 	purego.RegisterLibFunc(&ptrAPI_SteamInput, lib, flatAPI_SteamInput)
 	purego.RegisterLibFunc(&ptrAPI_ISteamInput_GetConnectedControllers, lib, flatAPI_ISteamInput_GetConnectedControllers)
 	purego.RegisterLibFunc(&ptrAPI_ISteamInput_GetInputTypeForHandle, lib, flatAPI_ISteamInput_GetInputTypeForHandle)
 	purego.RegisterLibFunc(&ptrAPI_ISteamInput_Init, lib, flatAPI_ISteamInput_Init)
 	purego.RegisterLibFunc(&ptrAPI_ISteamInput_RunFrame, lib, flatAPI_ISteamInput_RunFrame)
+
+	// ISteamRemoteStorage
 	purego.RegisterLibFunc(&ptrAPI_SteamRemoteStorage, lib, flatAPI_SteamRemoteStorage)
 	purego.RegisterLibFunc(&ptrAPI_ISteamRemoteStorage_FileWrite, lib, flatAPI_ISteamRemoteStorage_FileWrite)
 	purego.RegisterLibFunc(&ptrAPI_ISteamRemoteStorage_FileRead, lib, flatAPI_ISteamRemoteStorage_FileRead)
 	purego.RegisterLibFunc(&ptrAPI_ISteamRemoteStorage_FileDelete, lib, flatAPI_ISteamRemoteStorage_FileDelete)
 	purego.RegisterLibFunc(&ptrAPI_ISteamRemoteStorage_GetFileSize, lib, flatAPI_ISteamRemoteStorage_GetFileSize)
+
+	// ISteamUser
 	purego.RegisterLibFunc(&ptrAPI_SteamUser, lib, flatAPI_SteamUser)
 	purego.RegisterLibFunc(&ptrAPI_ISteamUser_GetSteamID, lib, flatAPI_ISteamUser_GetSteamID)
+
+	// ISteamUserStats
 	purego.RegisterLibFunc(&ptrAPI_SteamUserStats, lib, flatAPI_SteamUserStats)
 	purego.RegisterLibFunc(&ptrAPI_ISteamUserStats_GetAchievement, lib, flatAPI_ISteamUserStats_GetAchievement)
 	purego.RegisterLibFunc(&ptrAPI_ISteamUserStats_SetAchievement, lib, flatAPI_ISteamUserStats_SetAchievement)
 	purego.RegisterLibFunc(&ptrAPI_ISteamUserStats_ClearAchievement, lib, flatAPI_ISteamUserStats_ClearAchievement)
 	purego.RegisterLibFunc(&ptrAPI_ISteamUserStats_StoreStats, lib, flatAPI_ISteamUserStats_StoreStats)
+
+	// ISteamUtils
 	purego.RegisterLibFunc(&ptrAPI_SteamUtils, lib, flatAPI_SteamUtils)
 	purego.RegisterLibFunc(&ptrAPI_ISteamUtils_IsOverlayEnabled, lib, flatAPI_ISteamUtils_IsOverlayEnabled)
 	purego.RegisterLibFunc(&ptrAPI_ISteamUtils_IsSteamRunningOnSteamDeck, lib, flatAPI_ISteamUtils_IsSteamRunningOnSteamDeck)

@@ -6,12 +6,7 @@ package steamworks
 import "syscall"
 
 func loadLib() (uintptr, error) {
-	var dllName string
-	if !is32Bit {
-		dllName = "steam_api64.dll"
-	} else {
-		dllName = "steam_api.dll"
-	}
+	dllName := "steam_api64.dll"
 	handle, err := syscall.LoadLibrary(dllName)
 	return uintptr(handle), err
 }

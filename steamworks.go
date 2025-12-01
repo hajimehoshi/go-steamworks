@@ -5,15 +5,11 @@
 
 package steamworks
 
-import "unsafe"
-
 type AppId_t uint32
 type CSteamID uint64
 type InputHandle_t uint64
 
 type ESteamAPIInitResult int32
-
-const is32Bit = unsafe.Sizeof(int(0)) == 4
 
 const (
 	ESteamAPIInitResult_OK              ESteamAPIInitResult = 0
