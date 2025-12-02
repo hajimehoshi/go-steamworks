@@ -4,6 +4,7 @@
 package steamworks
 
 import (
+	"bytes"
 	"fmt"
 	"unsafe"
 
@@ -154,7 +155,7 @@ type steamApps uintptr
 func (s steamApps) BGetDLCDataByIndex(iDLC int) (appID AppId_t, available bool, pchName string, success bool) {
 	var name [4096]byte
 	v := ptrAPI_ISteamApps_BGetDLCDataByIndex(uintptr(s), int32(iDLC), uintptr(unsafe.Pointer(&appID)), uintptr(unsafe.Pointer(&available)), uintptr(unsafe.Pointer(&name[0])), int32(len(name)))
-	return appID, available, string(name[:]), v
+	return appID, available, CStringToGo(name[:]), v
 }
 
 func (s steamApps) BIsDlcInstalled(appID AppId_t) bool {
@@ -288,4 +289,17 @@ func (s steamUtils) IsSteamRunningOnSteamDeck() bool {
 
 func (s steamUtils) ShowFloatingGamepadTextInput(keyboardMode EFloatingGamepadTextInputMode, textFieldXPosition, textFieldYPosition, textFieldWidth, textFieldHeight int32) bool {
 	return ptrAPI_ISteamUtils_ShowFloatingGamepadTextInput(uintptr(s), keyboardMode, textFieldXPosition, textFieldYPosition, textFieldWidth, textFieldHeight)
+}
+
+func CStringToGo(name []byte) string {
+	index := bytes.IndexByte(name, 0)
+	var nameResult string
+	if index < 0 {
+		// No null terminator detected, so use the whole result
+		nameResult = string(name)
+	} else {
+		// Null terminator detected, so use up to that point, excluding the null terminator
+		nameResult = string(name[:index])
+	}
+	return nameResult
 }
