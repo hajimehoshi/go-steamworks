@@ -1,8 +1,9 @@
 # go-steamworks
 
-** This project is still work in progress! **
-
 A Steamworks SDK binding for Go
+
+> [!WARNING]
+> 32bit OSes are not supported.
 
 ## Steamworks SDK version
 
