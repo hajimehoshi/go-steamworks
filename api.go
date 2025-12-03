@@ -292,14 +292,9 @@ func (s steamUtils) ShowFloatingGamepadTextInput(keyboardMode EFloatingGamepadTe
 }
 
 func cStringToGo(name []byte) string {
-	index := bytes.IndexByte(name, 0)
-	var nameResult string
-	if index < 0 {
-		// No null terminator detected, so use the whole result
-		nameResult = string(name)
-	} else {
-		// Null terminator detected, so use up to that point, excluding the null terminator
-		nameResult = string(name[:index])
+	idx := bytes.IndexByte(name, 0)
+	if idx < 0 {
+		return string(name)
 	}
-	return nameResult
+	return string(name[:idx])
 }
