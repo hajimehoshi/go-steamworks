@@ -53,17 +53,23 @@ var (
 	ptrAPI_ISteamUser_GetSteamID func(uintptr) CSteamID
 
 	// ISteamUserStats
-	ptrAPI_SteamUserStats                   func() uintptr
-	ptrAPI_ISteamUserStats_GetAchievement   func(uintptr, string, uintptr) bool
-	ptrAPI_ISteamUserStats_SetAchievement   func(uintptr, string) bool
-	ptrAPI_ISteamUserStats_ClearAchievement func(uintptr, string) bool
-	ptrAPI_ISteamUserStats_StoreStats       func(uintptr) bool
+	ptrAPI_SteamUserStats                                func() uintptr
+	ptrAPI_ISteamUserStats_GetAchievement                func(uintptr, string, uintptr) bool
+	ptrAPI_ISteamUserStats_SetAchievement                func(uintptr, string) bool
+	ptrAPI_ISteamUserStats_ClearAchievement              func(uintptr, string) bool
+	ptrAPI_ISteamUserStats_StoreStats                    func(uintptr) bool
+	ptrAPI_ISteamUserStats_FindLeaderboard               func(uintptr, string) SteamAPICall_t
+	ptrAPI_ISteamUserStats_DownloadLeaderboardEntries    func(uintptr, SteamLeaderboard_t, ELeaderboardDataRequest, int32, int32) SteamAPICall_t
+	ptrAPI_ISteamUserStats_UploadLeaderboardScore        func(uintptr, SteamLeaderboard_t, ELeaderboardUploadScoreMethod, int32, uintptr, int32) SteamAPICall_t
+	ptrAPI_ISteamUserStats_GetDownloadedLeaderboardEntry func(uintptr, SteamLeaderboardEntries_t, int32, uintptr, uintptr, int32) bool
+	ptrAPI_ISteamUserStats_GetLeaderboardEntryCount      func(uintptr, SteamLeaderboard_t) int32
 
 	// ISteamUtils
 	ptrAPI_SteamUtils                               func() uintptr
 	ptrAPI_ISteamUtils_IsOverlayEnabled             func(uintptr) bool
 	ptrAPI_ISteamUtils_IsSteamRunningOnSteamDeck    func(uintptr) bool
 	ptrAPI_ISteamUtils_ShowFloatingGamepadTextInput func(uintptr, EFloatingGamepadTextInputMode, int32, int32, int32, int32) bool
+	ptrAPI_ISteamUtils_GetAPICallResult             func(uintptr, SteamAPICall_t, uintptr, int32, int32, uintptr) bool
 )
 
 func registerFunctions(lib uintptr) {
@@ -109,12 +115,18 @@ func registerFunctions(lib uintptr) {
 	purego.RegisterLibFunc(&ptrAPI_ISteamUserStats_SetAchievement, lib, flatAPI_ISteamUserStats_SetAchievement)
 	purego.RegisterLibFunc(&ptrAPI_ISteamUserStats_ClearAchievement, lib, flatAPI_ISteamUserStats_ClearAchievement)
 	purego.RegisterLibFunc(&ptrAPI_ISteamUserStats_StoreStats, lib, flatAPI_ISteamUserStats_StoreStats)
+	purego.RegisterLibFunc(&ptrAPI_ISteamUserStats_FindLeaderboard, lib, flatAPI_ISteamUserStats_FindLeaderboard)
+	purego.RegisterLibFunc(&ptrAPI_ISteamUserStats_DownloadLeaderboardEntries, lib, flatAPI_ISteamUserStats_DownloadLeaderboardEntries)
+	purego.RegisterLibFunc(&ptrAPI_ISteamUserStats_UploadLeaderboardScore, lib, flatAPI_ISteamUserStats_UploadLeaderboardScore)
+	purego.RegisterLibFunc(&ptrAPI_ISteamUserStats_GetDownloadedLeaderboardEntry, lib, flatAPI_ISteamUserStats_GetDownloadedLeaderboardEntry)
+	purego.RegisterLibFunc(&ptrAPI_ISteamUserStats_GetLeaderboardEntryCount, lib, flatAPI_ISteamUserStats_GetLeaderboardEntryCount)
 
 	// ISteamUtils
 	purego.RegisterLibFunc(&ptrAPI_SteamUtils, lib, flatAPI_SteamUtils)
 	purego.RegisterLibFunc(&ptrAPI_ISteamUtils_IsOverlayEnabled, lib, flatAPI_ISteamUtils_IsOverlayEnabled)
 	purego.RegisterLibFunc(&ptrAPI_ISteamUtils_IsSteamRunningOnSteamDeck, lib, flatAPI_ISteamUtils_IsSteamRunningOnSteamDeck)
 	purego.RegisterLibFunc(&ptrAPI_ISteamUtils_ShowFloatingGamepadTextInput, lib, flatAPI_ISteamUtils_ShowFloatingGamepadTextInput)
+	purego.RegisterLibFunc(&ptrAPI_ISteamUtils_GetAPICallResult, lib, flatAPI_ISteamUtils_GetAPICallResult)
 }
 
 var theLib *lib
@@ -142,7 +154,7 @@ func Init() error {
 	return nil
 }
 
-func RunCallbacks() {
+func runCallbacksSteam() {
 	ptrAPI_RunCallbacks()
 }
 
@@ -271,6 +283,116 @@ func (s steamUserStats) ClearAchievement(name string) bool {
 
 func (s steamUserStats) StoreStats() bool {
 	return ptrAPI_ISteamUserStats_StoreStats(uintptr(s))
+}
+
+func (s steamUserStats) FindLeaderboard(name string, onComplete func(handle SteamLeaderboard_t, found bool, err error)) {
+	handle := ptrAPI_ISteamUserStats_FindLeaderboard(uintptr(s), name)
+	registerCallback(func() bool {
+		resultRaw, completed, success := steamUtilsGetAPICallResult[leaderboardFindResult_t](SteamUtils().(steamUtils), handle, LeaderboardFindResult_k_iCallback)
+		if !completed {
+			return false
+		}
+
+		if success {
+			result := resultRaw.Read()
+			onComplete(result.steamLeaderboard, result.leaderboardFound, nil)
+		} else {
+			onComplete(0, false, fmt.Errorf("failed to find leaderboard %s", name))
+		}
+		return true
+	})
+}
+
+func (s steamUserStats) DownloadLeaderboardEntries(hSteamLeaderboard SteamLeaderboard_t, eLeaderboardDataRequest ELeaderboardDataRequest, nRangeStart, nRangeEnd int32, onComplete func(entries []LeaderboardEntry, err error)) {
+	v := ptrAPI_ISteamUserStats_DownloadLeaderboardEntries(uintptr(s), hSteamLeaderboard, eLeaderboardDataRequest, nRangeStart, nRangeEnd)
+
+	handle := SteamAPICall_t(v)
+	registerCallback(func() bool {
+		resultRaw, completed, success := steamUtilsGetAPICallResult[leaderboardScoresDownloaded_t](SteamUtils().(steamUtils), handle, LeaderboardScoresDownloaded_k_iCallback)
+		if !completed {
+			return false
+		}
+
+		if success {
+			result := resultRaw.Read()
+			if result.entryCount == 0 {
+				onComplete(nil, nil)
+				return true
+			}
+			entries := make([]LeaderboardEntry, result.entryCount)
+
+			// Now grab all the entries with the detail count we learned
+			for i := range result.entryCount {
+				var ok bool
+				ok, entries[i] = s.getDownloadedLeaderboardEntryWithDetails(result.steamLeaderboardEntries, i)
+				if !ok {
+					onComplete(nil, fmt.Errorf("failed to get leaderboard entry %d", i))
+					return true
+				}
+			}
+
+			onComplete(entries, nil)
+		} else {
+			onComplete(nil, fmt.Errorf("failed to download leaderboard entries"))
+		}
+		return true
+	})
+}
+
+func (s steamUserStats) getDownloadedLeaderboardEntryWithDetails(hSteamLeaderboardEntries SteamLeaderboardEntries_t, index int32) (success bool, entry LeaderboardEntry) {
+	var rawEntry leaderboardEntry_t
+	success = ptrAPI_ISteamUserStats_GetDownloadedLeaderboardEntry(uintptr(s), hSteamLeaderboardEntries, index, uintptr(unsafe.Pointer(&rawEntry)), 0, 0)
+	if !success {
+		return false, LeaderboardEntry{}
+	}
+
+	readEntry := rawEntry.Read()
+	if readEntry.details > 0 {
+		entry.details = make([]int32, readEntry.details)
+		success = ptrAPI_ISteamUserStats_GetDownloadedLeaderboardEntry(uintptr(s), hSteamLeaderboardEntries, index, uintptr(unsafe.Pointer(&rawEntry)), uintptr(unsafe.Pointer(&entry.details[0])), readEntry.details)
+		if !success {
+			return false, LeaderboardEntry{}
+		}
+	}
+
+	entry.globalRank = readEntry.globalRank
+	entry.score = readEntry.score
+	entry.steamIDUser = readEntry.steamIDUser
+	entry.UGC = readEntry.UGC
+
+	return
+}
+
+func (s steamUserStats) UploadLeaderboardScore(hSteamLeaderboard SteamLeaderboard_t, eLeaderboardUploadScoreMethod ELeaderboardUploadScoreMethod, score int32, details []int32, onComplete func(result LeaderboardScoreUploaded, err error)) {
+	v := ptrAPI_ISteamUserStats_UploadLeaderboardScore(uintptr(s), hSteamLeaderboard, eLeaderboardUploadScoreMethod, score, uintptr(unsafe.Pointer(&details[0])), int32(len(details)))
+
+	handle := SteamAPICall_t(v)
+	registerCallback(func() bool {
+		resultRaw, completed, success := steamUtilsGetAPICallResult[leaderboardScoreUploaded_t](SteamUtils().(steamUtils), handle, LeaderboardScoreUploaded_k_iCallback)
+		if !completed {
+			return false
+		}
+
+		readResult := resultRaw.Read()
+		if !success {
+			onComplete(LeaderboardScoreUploaded{}, fmt.Errorf("GetAPICallResult failed"))
+		} else if !readResult.success {
+			onComplete(LeaderboardScoreUploaded{}, fmt.Errorf("bSuccess is false"))
+		} else {
+			result := LeaderboardScoreUploaded{
+				nScore:              readResult.score,
+				bScoreChanged:       readResult.scoreChanged,
+				nGlobalRankNew:      readResult.globalRankNew,
+				nGlobalRankPrevious: readResult.globalRankPrevious,
+			}
+			onComplete(result, nil)
+		}
+		return true
+	})
+}
+
+func (s steamUserStats) GetLeaderboardEntryCount(hSteamLeaderboard SteamLeaderboard_t) int32 {
+	return ptrAPI_ISteamUserStats_GetLeaderboardEntryCount(uintptr(s), hSteamLeaderboard)
 }
 
 func SteamUtils() ISteamUtils {
