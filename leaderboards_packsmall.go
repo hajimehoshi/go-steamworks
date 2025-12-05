@@ -2,8 +2,7 @@
 
 package steamworks
 
-// 32-bit Windows uses VALVE_CALLBACK_PACK_SMALL (4-byte alignment)
-// This is the same packing as non-Windows platforms (Unix, macOS, etc.)
+// Non-Windows platforms (Unix, macOS, FreeBSD) use VALVE_CALLBACK_PACK_SMALL as defined in steamclientpublic.h (4-byte alignment)
 
 import "encoding/binary"
 
