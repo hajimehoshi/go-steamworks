@@ -1,4 +1,4 @@
-//go:build (windows && 386) || !windows
+//go:build !windows
 
 package steamworks
 
