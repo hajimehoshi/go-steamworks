@@ -30,7 +30,7 @@ func registerCallback(f func() bool) {
 }
 
 // Basically a member function, but implemented as a standalone function because of generics limitations.
-func steamUtilsGetAPICallResult[T any](s steamUtils, apiCall SteamAPICall_t, callbackType int) (result T, completed, success bool) {
+func steamUtilsGetAPICallResult[T any](s steamUtils, apiCall steamAPICall_t, callbackType int) (result T, completed, success bool) {
 	var failed bool
 	completed = ptrAPI_ISteamUtils_GetAPICallResult(uintptr(s), apiCall, uintptr(unsafe.Pointer(&result)), int32(unsafe.Sizeof(result)), int32(callbackType), uintptr(unsafe.Pointer(&failed)))
 	success = !failed

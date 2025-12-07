@@ -58,9 +58,9 @@ var (
 	ptrAPI_ISteamUserStats_SetAchievement                func(uintptr, string) bool
 	ptrAPI_ISteamUserStats_ClearAchievement              func(uintptr, string) bool
 	ptrAPI_ISteamUserStats_StoreStats                    func(uintptr) bool
-	ptrAPI_ISteamUserStats_FindLeaderboard               func(uintptr, string) SteamAPICall_t
-	ptrAPI_ISteamUserStats_DownloadLeaderboardEntries    func(uintptr, SteamLeaderboard_t, ELeaderboardDataRequest, int32, int32) SteamAPICall_t
-	ptrAPI_ISteamUserStats_UploadLeaderboardScore        func(uintptr, SteamLeaderboard_t, ELeaderboardUploadScoreMethod, int32, uintptr, int32) SteamAPICall_t
+	ptrAPI_ISteamUserStats_FindLeaderboard               func(uintptr, string) steamAPICall_t
+	ptrAPI_ISteamUserStats_DownloadLeaderboardEntries    func(uintptr, SteamLeaderboard_t, ELeaderboardDataRequest, int32, int32) steamAPICall_t
+	ptrAPI_ISteamUserStats_UploadLeaderboardScore        func(uintptr, SteamLeaderboard_t, ELeaderboardUploadScoreMethod, int32, uintptr, int32) steamAPICall_t
 	ptrAPI_ISteamUserStats_GetDownloadedLeaderboardEntry func(uintptr, SteamLeaderboardEntries_t, int32, uintptr, uintptr, int32) bool
 	ptrAPI_ISteamUserStats_GetLeaderboardEntryCount      func(uintptr, SteamLeaderboard_t) int32
 
@@ -69,7 +69,7 @@ var (
 	ptrAPI_ISteamUtils_IsOverlayEnabled             func(uintptr) bool
 	ptrAPI_ISteamUtils_IsSteamRunningOnSteamDeck    func(uintptr) bool
 	ptrAPI_ISteamUtils_ShowFloatingGamepadTextInput func(uintptr, EFloatingGamepadTextInputMode, int32, int32, int32, int32) bool
-	ptrAPI_ISteamUtils_GetAPICallResult             func(uintptr, SteamAPICall_t, uintptr, int32, int32, uintptr) bool
+	ptrAPI_ISteamUtils_GetAPICallResult             func(uintptr, steamAPICall_t, uintptr, int32, int32, uintptr) bool
 )
 
 func registerFunctions(lib uintptr) {
@@ -306,7 +306,7 @@ func (s steamUserStats) FindLeaderboard(name string, onComplete func(handle Stea
 func (s steamUserStats) DownloadLeaderboardEntries(hSteamLeaderboard SteamLeaderboard_t, eLeaderboardDataRequest ELeaderboardDataRequest, nRangeStart, nRangeEnd int32, onComplete func(entries []LeaderboardEntry, err error)) {
 	v := ptrAPI_ISteamUserStats_DownloadLeaderboardEntries(uintptr(s), hSteamLeaderboard, eLeaderboardDataRequest, nRangeStart, nRangeEnd)
 
-	handle := SteamAPICall_t(v)
+	handle := steamAPICall_t(v)
 	registerCallback(func() bool {
 		resultRaw, completed, success := steamUtilsGetAPICallResult[leaderboardScoresDownloaded_t](SteamUtils().(steamUtils), handle, LeaderboardScoresDownloaded_k_iCallback)
 		if !completed {
@@ -366,7 +366,7 @@ func (s steamUserStats) getDownloadedLeaderboardEntryWithDetails(hSteamLeaderboa
 func (s steamUserStats) UploadLeaderboardScore(hSteamLeaderboard SteamLeaderboard_t, eLeaderboardUploadScoreMethod ELeaderboardUploadScoreMethod, score int32, details []int32, onComplete func(result LeaderboardScoreUploaded, err error)) {
 	v := ptrAPI_ISteamUserStats_UploadLeaderboardScore(uintptr(s), hSteamLeaderboard, eLeaderboardUploadScoreMethod, score, uintptr(unsafe.Pointer(&details[0])), int32(len(details)))
 
-	handle := SteamAPICall_t(v)
+	handle := steamAPICall_t(v)
 	registerCallback(func() bool {
 		resultRaw, completed, success := steamUtilsGetAPICallResult[leaderboardScoreUploaded_t](SteamUtils().(steamUtils), handle, LeaderboardScoreUploaded_k_iCallback)
 		if !completed {

@@ -8,7 +8,7 @@ package steamworks
 type AppId_t uint32
 type CSteamID uint64
 type InputHandle_t uint64
-type SteamAPICall_t uint64
+type steamAPICall_t uint64
 type SteamLeaderboard_t uint64
 type SteamLeaderboardEntries_t uint64
 type UGCHandle_t uint64
