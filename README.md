@@ -31,7 +31,7 @@ func init() {
 	if steamworks.RestartAppIfNecessary(appID) {
 		os.Exit(1)
 	}
-	if !steamworks.Init() {
+	if err := steamworks.Init(); err != nil {
 		panic("steamworks.Init failed")
 	}
 }
