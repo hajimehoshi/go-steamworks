@@ -19,6 +19,7 @@ On Windows, copy one of these files on the working directory:
 package steamapi
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/hajimehoshi/go-steamworks"
@@ -32,7 +33,7 @@ func init() {
 		os.Exit(1)
 	}
 	if err := steamworks.Init(); err != nil {
-		panic("steamworks.Init failed")
+		panic(fmt.Sprintf("steamworks.Init failed: %v", err))
 	}
 }
 
