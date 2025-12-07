@@ -8,6 +8,15 @@ package steamworks
 type AppId_t uint32
 type CSteamID uint64
 type InputHandle_t uint64
+type steamAPICall_t uint64
+type SteamLeaderboard_t uint64
+type SteamLeaderboardEntries_t uint64
+type UGCHandle_t uint64
+
+const k_iSteamUserStatsCallbacks = 1100
+const LeaderboardFindResult_k_iCallback = k_iSteamUserStatsCallbacks + 4
+const LeaderboardScoresDownloaded_k_iCallback = k_iSteamUserStatsCallbacks + 5
+const LeaderboardScoreUploaded_k_iCallback = k_iSteamUserStatsCallbacks + 6
 
 type ESteamAPIInitResult int32
 
@@ -53,6 +62,84 @@ const (
 	EFloatingGamepadTextInputMode_ModeNumeric       EFloatingGamepadTextInputMode = 3
 )
 
+type ELeaderboardDataRequest int32
+
+const (
+	ELeaderboardDataRequestGlobal           ELeaderboardDataRequest = 0
+	ELeaderboardDataRequestGlobalAroundUser ELeaderboardDataRequest = 1
+	ELeaderboardDataRequestFriends          ELeaderboardDataRequest = 2
+	ELeaderboardDataRequestUsers            ELeaderboardDataRequest = 3
+)
+
+type ELeaderboardDisplayType int32
+
+const (
+	ELeaderboardDisplayTypeNone             ELeaderboardDisplayType = 0
+	ELeaderboardDisplayTypeNumeric          ELeaderboardDisplayType = 1
+	ELeaderboardDisplayTypeTimeSeconds      ELeaderboardDisplayType = 2
+	ELeaderboardDisplayTypeTimeMilliSeconds ELeaderboardDisplayType = 3
+)
+
+type ELeaderboardSortMethod int32
+
+const (
+	ELeaderboardSortMethodNone       ELeaderboardSortMethod = 0
+	ELeaderboardSortMethodAscending  ELeaderboardSortMethod = 1
+	ELeaderboardSortMethodDescending ELeaderboardSortMethod = 2
+)
+
+type ELeaderboardUploadScoreMethod int32
+
+const (
+	ELeaderboardUploadScoreMethodNone        ELeaderboardUploadScoreMethod = 0
+	ELeaderboardUploadScoreMethodKeepBest    ELeaderboardUploadScoreMethod = 1
+	ELeaderboardUploadScoreMethodForceUpdate ELeaderboardUploadScoreMethod = 2
+)
+
+type leaderboardFindResult struct {
+	steamLeaderboard SteamLeaderboard_t
+	leaderboardFound bool
+}
+
+type leaderboardScoresDownloaded struct {
+	steamLeaderboard        SteamLeaderboard_t
+	steamLeaderboardEntries SteamLeaderboardEntries_t
+	entryCount              int32
+}
+
+type leaderboardScoreUploaded struct {
+	success            bool
+	steamLeaderboard   SteamLeaderboard_t
+	score              int32
+	scoreChanged       bool
+	globalRankNew      int32
+	globalRankPrevious int32
+}
+
+type leaderboardEntry struct {
+	steamIDUser CSteamID
+	globalRank  int32
+	score       int32
+	details     int32
+	UGC         UGCHandle_t
+}
+
+// What go users see
+type LeaderboardEntry struct {
+	steamIDUser CSteamID
+	globalRank  int32
+	score       int32
+	details     []int32
+	UGC         UGCHandle_t
+}
+
+type LeaderboardScoreUploaded struct {
+	nScore              int32
+	bScoreChanged       bool
+	nGlobalRankNew      int32
+	nGlobalRankPrevious int32
+}
+
 type ISteamApps interface {
 	BGetDLCDataByIndex(iDLC int) (appID AppId_t, available bool, pchName string, success bool)
 	BIsDlcInstalled(appID AppId_t) bool
@@ -84,6 +171,10 @@ type ISteamUserStats interface {
 	SetAchievement(name string) bool
 	ClearAchievement(name string) bool
 	StoreStats() bool
+	FindLeaderboard(name string, onComplete func(handle SteamLeaderboard_t, found bool, err error))
+	DownloadLeaderboardEntries(hSteamLeaderboard SteamLeaderboard_t, eLeaderboardDataRequest ELeaderboardDataRequest, nRangeStart, nRangeEnd int32, onComplete func(entries []LeaderboardEntry, err error))
+	UploadLeaderboardScore(hSteamLeaderboard SteamLeaderboard_t, eLeaderboardUploadScoreMethod ELeaderboardUploadScoreMethod, nScore int32, pScoreDetails []int32, onComplete func(result LeaderboardScoreUploaded, err error))
+	GetLeaderboardEntryCount(hSteamLeaderboard SteamLeaderboard_t) int32
 }
 
 type ISteamUtils interface {
@@ -128,16 +219,22 @@ const (
 	flatAPI_SteamUser             = "SteamAPI_SteamUser_v023"
 	flatAPI_ISteamUser_GetSteamID = "SteamAPI_ISteamUser_GetSteamID"
 
-	flatAPI_SteamUserStats                   = "SteamAPI_SteamUserStats_v013"
-	flatAPI_ISteamUserStats_GetAchievement   = "SteamAPI_ISteamUserStats_GetAchievement"
-	flatAPI_ISteamUserStats_SetAchievement   = "SteamAPI_ISteamUserStats_SetAchievement"
-	flatAPI_ISteamUserStats_ClearAchievement = "SteamAPI_ISteamUserStats_ClearAchievement"
-	flatAPI_ISteamUserStats_StoreStats       = "SteamAPI_ISteamUserStats_StoreStats"
+	flatAPI_SteamUserStats                                = "SteamAPI_SteamUserStats_v013"
+	flatAPI_ISteamUserStats_GetAchievement                = "SteamAPI_ISteamUserStats_GetAchievement"
+	flatAPI_ISteamUserStats_SetAchievement                = "SteamAPI_ISteamUserStats_SetAchievement"
+	flatAPI_ISteamUserStats_ClearAchievement              = "SteamAPI_ISteamUserStats_ClearAchievement"
+	flatAPI_ISteamUserStats_StoreStats                    = "SteamAPI_ISteamUserStats_StoreStats"
+	flatAPI_ISteamUserStats_FindLeaderboard               = "SteamAPI_ISteamUserStats_FindLeaderboard"
+	flatAPI_ISteamUserStats_DownloadLeaderboardEntries    = "SteamAPI_ISteamUserStats_DownloadLeaderboardEntries"
+	flatAPI_ISteamUserStats_UploadLeaderboardScore        = "SteamAPI_ISteamUserStats_UploadLeaderboardScore"
+	flatAPI_ISteamUserStats_GetDownloadedLeaderboardEntry = "SteamAPI_ISteamUserStats_GetDownloadedLeaderboardEntry"
+	flatAPI_ISteamUserStats_GetLeaderboardEntryCount      = "SteamAPI_ISteamUserStats_GetLeaderboardEntryCount"
 
 	flatAPI_SteamUtils                               = "SteamAPI_SteamUtils_v010"
 	flatAPI_ISteamUtils_IsOverlayEnabled             = "SteamAPI_ISteamUtils_IsOverlayEnabled"
 	flatAPI_ISteamUtils_IsSteamRunningOnSteamDeck    = "SteamAPI_ISteamUtils_IsSteamRunningOnSteamDeck"
 	flatAPI_ISteamUtils_ShowFloatingGamepadTextInput = "SteamAPI_ISteamUtils_ShowFloatingGamepadTextInput"
+	flatAPI_ISteamUtils_GetAPICallResult             = "SteamAPI_ISteamUtils_GetAPICallResult"
 )
 
 type steamErrMsg [1024]byte
