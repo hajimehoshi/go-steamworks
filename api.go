@@ -60,10 +60,12 @@ var (
 	ptrAPI_ISteamUserStats_StoreStats       func(uintptr) bool
 
 	// ISteamUtils
-	ptrAPI_SteamUtils                               func() uintptr
-	ptrAPI_ISteamUtils_IsOverlayEnabled             func(uintptr) bool
-	ptrAPI_ISteamUtils_IsSteamRunningOnSteamDeck    func(uintptr) bool
-	ptrAPI_ISteamUtils_ShowFloatingGamepadTextInput func(uintptr, EFloatingGamepadTextInputMode, int32, int32, int32, int32) bool
+	ptrAPI_SteamUtils                                func() uintptr
+	ptrAPI_ISteamUtils_IsOverlayEnabled              func(uintptr) bool
+	ptrAPI_ISteamUtils_IsRunningOnSteamHardware      func(uintptr) ESteamHardwareType
+	ptrAPI_ISteamUtils_GetSteamHardwareDefaultConfig func(uintptr) ESteamHardwareDefaultConfig
+	ptrAPI_ISteamUtils_IsRunningUnderProton          func(uintptr) bool
+	ptrAPI_ISteamUtils_ShowFloatingGamepadTextInput  func(uintptr, EFloatingGamepadTextInputMode, int32, int32, int32, int32) bool
 )
 
 func registerFunctions(lib uintptr) {
@@ -113,7 +115,9 @@ func registerFunctions(lib uintptr) {
 	// ISteamUtils
 	purego.RegisterLibFunc(&ptrAPI_SteamUtils, lib, flatAPI_SteamUtils)
 	purego.RegisterLibFunc(&ptrAPI_ISteamUtils_IsOverlayEnabled, lib, flatAPI_ISteamUtils_IsOverlayEnabled)
-	purego.RegisterLibFunc(&ptrAPI_ISteamUtils_IsSteamRunningOnSteamDeck, lib, flatAPI_ISteamUtils_IsSteamRunningOnSteamDeck)
+	purego.RegisterLibFunc(&ptrAPI_ISteamUtils_IsRunningOnSteamHardware, lib, flatAPI_ISteamUtils_IsRunningOnSteamHardware)
+	purego.RegisterLibFunc(&ptrAPI_ISteamUtils_GetSteamHardwareDefaultConfig, lib, flatAPI_ISteamUtils_GetSteamHardwareDefaultConfig)
+	purego.RegisterLibFunc(&ptrAPI_ISteamUtils_IsRunningUnderProton, lib, flatAPI_ISteamUtils_IsRunningUnderProton)
 	purego.RegisterLibFunc(&ptrAPI_ISteamUtils_ShowFloatingGamepadTextInput, lib, flatAPI_ISteamUtils_ShowFloatingGamepadTextInput)
 }
 
@@ -283,8 +287,20 @@ func (s steamUtils) IsOverlayEnabled() bool {
 	return ptrAPI_ISteamUtils_IsOverlayEnabled(uintptr(s))
 }
 
+func (s steamUtils) IsRunningOnSteamHardware() ESteamHardwareType {
+	return ptrAPI_ISteamUtils_IsRunningOnSteamHardware(uintptr(s))
+}
+
+func (s steamUtils) GetSteamHardwareDefaultConfig() ESteamHardwareDefaultConfig {
+	return ptrAPI_ISteamUtils_GetSteamHardwareDefaultConfig(uintptr(s))
+}
+
+func (s steamUtils) IsRunningUnderProton() bool {
+	return ptrAPI_ISteamUtils_IsRunningUnderProton(uintptr(s))
+}
+
 func (s steamUtils) IsSteamRunningOnSteamDeck() bool {
-	return ptrAPI_ISteamUtils_IsSteamRunningOnSteamDeck(uintptr(s))
+	return s.IsRunningOnSteamHardware() == ESteamHardwareType_SteamDeck
 }
 
 func (s steamUtils) ShowFloatingGamepadTextInput(keyboardMode EFloatingGamepadTextInputMode, textFieldXPosition, textFieldYPosition, textFieldWidth, textFieldHeight int32) bool {
