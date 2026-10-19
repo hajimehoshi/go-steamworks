@@ -6,7 +6,6 @@ package steamworks
 import (
 	"bytes"
 	"fmt"
-	"unsafe"
 
 	"github.com/ebitengine/purego"
 )
@@ -18,14 +17,14 @@ type lib struct {
 var (
 	// General
 	ptrAPI_RestartAppIfNecessary func(uint32) bool
-	ptrAPI_InitFlat              func(uintptr) ESteamAPIInitResult
+	ptrAPI_InitFlat              func(*steamErrMsg) ESteamAPIInitResult
 	ptrAPI_RunCallbacks          func()
 
 	// ISteamApps
 	ptrAPI_SteamApps                         func() uintptr
-	ptrAPI_ISteamApps_BGetDLCDataByIndex     func(uintptr, int32, uintptr, uintptr, uintptr, int32) bool
+	ptrAPI_ISteamApps_BGetDLCDataByIndex     func(uintptr, int32, *AppId_t, *bool, *byte, int32) bool
 	ptrAPI_ISteamApps_BIsDlcInstalled        func(uintptr, AppId_t) bool
-	ptrAPI_ISteamApps_GetAppInstallDir       func(uintptr, AppId_t, uintptr, int32) int32
+	ptrAPI_ISteamApps_GetAppInstallDir       func(uintptr, AppId_t, *byte, int32) int32
 	ptrAPI_ISteamApps_GetCurrentGameLanguage func(uintptr) string
 	ptrAPI_ISteamApps_GetDLCCount            func(uintptr) int32
 
@@ -36,15 +35,15 @@ var (
 
 	// ISteamInput
 	ptrAPI_SteamInput                          func() uintptr
-	ptrAPI_ISteamInput_GetConnectedControllers func(uintptr, uintptr) int32
+	ptrAPI_ISteamInput_GetConnectedControllers func(uintptr, *InputHandle_t) int32
 	ptrAPI_ISteamInput_GetInputTypeForHandle   func(uintptr, InputHandle_t) int32
 	ptrAPI_ISteamInput_Init                    func(uintptr, bool) bool
 	ptrAPI_ISteamInput_RunFrame                func(uintptr, bool)
 
 	// ISteamRemoteStorage
 	ptrAPI_SteamRemoteStorage              func() uintptr
-	ptrAPI_ISteamRemoteStorage_FileWrite   func(uintptr, string, uintptr, int32) bool
-	ptrAPI_ISteamRemoteStorage_FileRead    func(uintptr, string, uintptr, int32) int32
+	ptrAPI_ISteamRemoteStorage_FileWrite   func(uintptr, string, *byte, int32) bool
+	ptrAPI_ISteamRemoteStorage_FileRead    func(uintptr, string, *byte, int32) int32
 	ptrAPI_ISteamRemoteStorage_FileDelete  func(uintptr, string) bool
 	ptrAPI_ISteamRemoteStorage_GetFileSize func(uintptr, string) int32
 
@@ -54,7 +53,7 @@ var (
 
 	// ISteamUserStats
 	ptrAPI_SteamUserStats                   func() uintptr
-	ptrAPI_ISteamUserStats_GetAchievement   func(uintptr, string, uintptr) bool
+	ptrAPI_ISteamUserStats_GetAchievement   func(uintptr, string, *bool) bool
 	ptrAPI_ISteamUserStats_SetAchievement   func(uintptr, string) bool
 	ptrAPI_ISteamUserStats_ClearAchievement func(uintptr, string) bool
 	ptrAPI_ISteamUserStats_StoreStats       func(uintptr) bool
@@ -140,7 +139,7 @@ func RestartAppIfNecessary(appID uint32) bool {
 
 func Init() error {
 	var msg steamErrMsg
-	if ptrAPI_InitFlat(uintptr(unsafe.Pointer(&msg))) != ESteamAPIInitResult_OK {
+	if ptrAPI_InitFlat(&msg) != ESteamAPIInitResult_OK {
 		return fmt.Errorf("steamworks: InitFlat failed: %s", msg.String())
 	}
 	return nil
@@ -158,7 +157,7 @@ type steamApps uintptr
 
 func (s steamApps) BGetDLCDataByIndex(iDLC int) (appID AppId_t, available bool, pchName string, success bool) {
 	var name [4096]byte
-	v := ptrAPI_ISteamApps_BGetDLCDataByIndex(uintptr(s), int32(iDLC), uintptr(unsafe.Pointer(&appID)), uintptr(unsafe.Pointer(&available)), uintptr(unsafe.Pointer(&name[0])), int32(len(name)))
+	v := ptrAPI_ISteamApps_BGetDLCDataByIndex(uintptr(s), int32(iDLC), &appID, &available, &name[0], int32(len(name)))
 	return appID, available, cStringToGo(name[:]), v
 }
 
@@ -168,7 +167,7 @@ func (s steamApps) BIsDlcInstalled(appID AppId_t) bool {
 
 func (s steamApps) GetAppInstallDir(appID AppId_t) string {
 	var path [4096]byte
-	v := ptrAPI_ISteamApps_GetAppInstallDir(uintptr(s), appID, uintptr(unsafe.Pointer(&path[0])), int32(len(path)))
+	v := ptrAPI_ISteamApps_GetAppInstallDir(uintptr(s), appID, &path[0], int32(len(path)))
 	if v == 0 {
 		return ""
 	}
@@ -205,7 +204,7 @@ type steamInput uintptr
 
 func (s steamInput) GetConnectedControllers() []InputHandle_t {
 	var handles [_STEAM_INPUT_MAX_COUNT]InputHandle_t
-	v := ptrAPI_ISteamInput_GetConnectedControllers(uintptr(s), uintptr(unsafe.Pointer(&handles[0])))
+	v := ptrAPI_ISteamInput_GetConnectedControllers(uintptr(s), &handles[0])
 	return handles[:int(v)]
 }
 
@@ -229,11 +228,11 @@ func SteamRemoteStorage() ISteamRemoteStorage {
 type steamRemoteStorage uintptr
 
 func (s steamRemoteStorage) FileWrite(file string, data []byte) bool {
-	return ptrAPI_ISteamRemoteStorage_FileWrite(uintptr(s), file, uintptr(unsafe.Pointer(&data[0])), int32(len(data)))
+	return ptrAPI_ISteamRemoteStorage_FileWrite(uintptr(s), file, &data[0], int32(len(data)))
 }
 
 func (s steamRemoteStorage) FileRead(file string, data []byte) int32 {
-	return ptrAPI_ISteamRemoteStorage_FileRead(uintptr(s), file, uintptr(unsafe.Pointer(&data[0])), int32(len(data)))
+	return ptrAPI_ISteamRemoteStorage_FileRead(uintptr(s), file, &data[0], int32(len(data)))
 }
 
 func (s steamRemoteStorage) FileDelete(file string) bool {
@@ -261,7 +260,7 @@ func SteamUserStats() ISteamUserStats {
 type steamUserStats uintptr
 
 func (s steamUserStats) GetAchievement(name string) (achieved, success bool) {
-	success = ptrAPI_ISteamUserStats_GetAchievement(uintptr(s), name, uintptr(unsafe.Pointer(&achieved)))
+	success = ptrAPI_ISteamUserStats_GetAchievement(uintptr(s), name, &achieved)
 	return
 }
 
