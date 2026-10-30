@@ -120,12 +120,16 @@ func registerFunctions(lib uintptr) {
 	purego.RegisterLibFunc(&ptrAPI_ISteamUtils_ShowFloatingGamepadTextInput, lib, flatAPI_ISteamUtils_ShowFloatingGamepadTextInput)
 }
 
-var theLib *lib
+var (
+	theLib  *lib
+	loadErr error
+)
 
 func init() {
 	l, err := loadLib()
 	if err != nil {
-		panic(err)
+		loadErr = err
+		return
 	}
 	registerFunctions(l)
 	theLib = &lib{
@@ -133,11 +137,21 @@ func init() {
 	}
 }
 
+func LoadError() error {
+	return loadErr
+}
+
 func RestartAppIfNecessary(appID uint32) bool {
+	if loadErr != nil {
+		return false
+	}
 	return ptrAPI_RestartAppIfNecessary(appID)
 }
 
 func Init() error {
+	if loadErr != nil {
+		return loadErr
+	}
 	var msg steamErrMsg
 	if ptrAPI_InitFlat(&msg) != ESteamAPIInitResult_OK {
 		return fmt.Errorf("steamworks: InitFlat failed: %s", msg.String())
@@ -146,6 +160,9 @@ func Init() error {
 }
 
 func RunCallbacks() {
+	if loadErr != nil {
+		return
+	}
 	ptrAPI_RunCallbacks()
 }
 
