@@ -6,6 +6,7 @@ package steamworks
 import (
 	"bytes"
 	"fmt"
+	"sync"
 
 	"github.com/ebitengine/purego"
 )
@@ -121,32 +122,33 @@ func registerFunctions(lib uintptr) {
 }
 
 var (
-	theLib  *lib
-	loadErr error
+	theLib *lib
+	// loadOnce lazily loads the Steam SDK library and registers its
+	// functions on first use, instead of doing so in a package init().
+	// Load errors are cached, so a failed load is only attempted once.
+	loadOnce = sync.OnceValue(func() error {
+		l, err := loadLib()
+		if err != nil {
+			return err
+		}
+		registerFunctions(l)
+		theLib = &lib{
+			lib: l,
+		}
+		return nil
+	})
 )
 
-func init() {
-	l, err := loadLib()
-	if err != nil {
-		loadErr = err
-		return
-	}
-	registerFunctions(l)
-	theLib = &lib{
-		lib: l,
-	}
-}
-
 func RestartAppIfNecessary(appID uint32) bool {
-	if loadErr != nil {
+	if loadOnce() != nil {
 		return false
 	}
 	return ptrAPI_RestartAppIfNecessary(appID)
 }
 
 func Init() error {
-	if loadErr != nil {
-		return loadErr
+	if err := loadOnce(); err != nil {
+		return err
 	}
 	var msg steamErrMsg
 	if ptrAPI_InitFlat(&msg) != ESteamAPIInitResult_OK {
@@ -156,7 +158,7 @@ func Init() error {
 }
 
 func RunCallbacks() {
-	if loadErr != nil {
+	if loadOnce() != nil {
 		return
 	}
 	ptrAPI_RunCallbacks()
