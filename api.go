@@ -137,10 +137,6 @@ func init() {
 	}
 }
 
-func LoadError() error {
-	return loadErr
-}
-
 func RestartAppIfNecessary(appID uint32) bool {
 	if loadErr != nil {
 		return false
