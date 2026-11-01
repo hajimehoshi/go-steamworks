@@ -7,7 +7,28 @@ package steamworks
 
 type AppId_t uint32
 type CSteamID uint64
+type HAuthTicket uint32
 type InputHandle_t uint64
+
+const HAuthTicketInvalid HAuthTicket = 0
+
+type EResult int32
+
+const (
+	EResultNone                  EResult = 0
+	EResultOK                    EResult = 1
+	EResultFail                  EResult = 2
+	EResultNoConnection          EResult = 3
+	EResultInvalidPassword       EResult = 5
+	EResultInvalidProtocolVer    EResult = 7
+	EResultInvalidParam          EResult = 8
+	EResultBusy                  EResult = 10
+	EResultInvalidState          EResult = 11
+	EResultTimeout               EResult = 16
+	EResultNotLoggedOn           EResult = 21
+	EResultPending               EResult = 22
+	EResultInsufficientPrivilege EResult = 24
+)
 
 type ESteamAPIInitResult int32
 
@@ -84,6 +105,15 @@ type ISteamRemoteStorage interface {
 
 type ISteamUser interface {
 	GetSteamID() CSteamID
+	GetAuthTicketForWebApi(identity string) HAuthTicket
+	CancelAuthTicket(ticket HAuthTicket)
+}
+
+type GetTicketForWebApiResponse struct {
+	Handle    HAuthTicket
+	Result    EResult
+	TicketLen int32
+	Ticket    [2560]byte
 }
 
 type ISteamUserStats interface {
@@ -158,8 +188,10 @@ const (
 	flatAPI_ISteamRemoteStorage_FileDelete  = "SteamAPI_ISteamRemoteStorage_FileDelete"
 	flatAPI_ISteamRemoteStorage_GetFileSize = "SteamAPI_ISteamRemoteStorage_GetFileSize"
 
-	flatAPI_SteamUser             = "SteamAPI_SteamUser_v023"
-	flatAPI_ISteamUser_GetSteamID = "SteamAPI_ISteamUser_GetSteamID"
+	flatAPI_SteamUser                         = "SteamAPI_SteamUser_v023"
+	flatAPI_ISteamUser_GetSteamID             = "SteamAPI_ISteamUser_GetSteamID"
+	flatAPI_ISteamUser_GetAuthTicketForWebApi = "SteamAPI_ISteamUser_GetAuthTicketForWebApi"
+	flatAPI_ISteamUser_CancelAuthTicket       = "SteamAPI_ISteamUser_CancelAuthTicket"
 
 	flatAPI_SteamUserStats                   = "SteamAPI_SteamUserStats_v013"
 	flatAPI_ISteamUserStats_GetAchievement   = "SteamAPI_ISteamUserStats_GetAchievement"

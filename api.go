@@ -49,8 +49,10 @@ var (
 	ptrAPI_ISteamRemoteStorage_GetFileSize func(uintptr, string) int32
 
 	// ISteamUser
-	ptrAPI_SteamUser             func() uintptr
-	ptrAPI_ISteamUser_GetSteamID func(uintptr) CSteamID
+	ptrAPI_SteamUser                         func() uintptr
+	ptrAPI_ISteamUser_GetSteamID             func(uintptr) CSteamID
+	ptrAPI_ISteamUser_GetAuthTicketForWebApi func(uintptr, string) HAuthTicket
+	ptrAPI_ISteamUser_CancelAuthTicket       func(uintptr, HAuthTicket)
 
 	// ISteamUserStats
 	ptrAPI_SteamUserStats                   func() uintptr
@@ -104,6 +106,8 @@ func registerFunctions(lib uintptr) {
 	// ISteamUser
 	purego.RegisterLibFunc(&ptrAPI_SteamUser, lib, flatAPI_SteamUser)
 	purego.RegisterLibFunc(&ptrAPI_ISteamUser_GetSteamID, lib, flatAPI_ISteamUser_GetSteamID)
+	purego.RegisterLibFunc(&ptrAPI_ISteamUser_GetAuthTicketForWebApi, lib, flatAPI_ISteamUser_GetAuthTicketForWebApi)
+	purego.RegisterLibFunc(&ptrAPI_ISteamUser_CancelAuthTicket, lib, flatAPI_ISteamUser_CancelAuthTicket)
 
 	// ISteamUserStats
 	purego.RegisterLibFunc(&ptrAPI_SteamUserStats, lib, flatAPI_SteamUserStats)
@@ -266,6 +270,14 @@ type steamUser uintptr
 
 func (s steamUser) GetSteamID() CSteamID {
 	return CSteamID(ptrAPI_ISteamUser_GetSteamID(uintptr(s)))
+}
+
+func (s steamUser) GetAuthTicketForWebApi(identity string) HAuthTicket {
+	return ptrAPI_ISteamUser_GetAuthTicketForWebApi(uintptr(s), identity)
+}
+
+func (s steamUser) CancelAuthTicket(ticket HAuthTicket) {
+	ptrAPI_ISteamUser_CancelAuthTicket(uintptr(s), ticket)
 }
 
 func SteamUserStats() ISteamUserStats {
