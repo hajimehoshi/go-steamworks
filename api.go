@@ -6,6 +6,7 @@ package steamworks
 import (
 	"bytes"
 	"fmt"
+	"sync"
 
 	"github.com/ebitengine/purego"
 )
@@ -120,24 +121,35 @@ func registerFunctions(lib uintptr) {
 	purego.RegisterLibFunc(&ptrAPI_ISteamUtils_ShowFloatingGamepadTextInput, lib, flatAPI_ISteamUtils_ShowFloatingGamepadTextInput)
 }
 
-var theLib *lib
-
-func init() {
-	l, err := loadLib()
-	if err != nil {
-		panic(err)
-	}
-	registerFunctions(l)
-	theLib = &lib{
-		lib: l,
-	}
-}
+var (
+	theLib *lib
+	// loadOnce lazily loads the Steam SDK library and registers its
+	// functions on first use, instead of doing so in a package init().
+	// Load errors are cached, so a failed load is only attempted once.
+	loadOnce = sync.OnceValue(func() error {
+		l, err := loadLib()
+		if err != nil {
+			return err
+		}
+		registerFunctions(l)
+		theLib = &lib{
+			lib: l,
+		}
+		return nil
+	})
+)
 
 func RestartAppIfNecessary(appID uint32) bool {
+	if loadOnce() != nil {
+		return false
+	}
 	return ptrAPI_RestartAppIfNecessary(appID)
 }
 
 func Init() error {
+	if err := loadOnce(); err != nil {
+		return err
+	}
 	var msg steamErrMsg
 	if ptrAPI_InitFlat(&msg) != ESteamAPIInitResult_OK {
 		return fmt.Errorf("steamworks: InitFlat failed: %s", msg.String())
@@ -146,6 +158,9 @@ func Init() error {
 }
 
 func RunCallbacks() {
+	if loadOnce() != nil {
+		return
+	}
 	ptrAPI_RunCallbacks()
 }
 
