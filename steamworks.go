@@ -5,6 +5,8 @@
 
 package steamworks
 
+import "structs"
+
 type AppId_t uint32
 type CSteamID uint64
 type HAuthTicket uint32
@@ -110,6 +112,7 @@ type ISteamUser interface {
 }
 
 type GetTicketForWebApiResponse struct {
+	_         structs.HostLayout
 	Handle    HAuthTicket
 	Result    EResult
 	TicketLen int32
