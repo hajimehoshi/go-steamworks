@@ -17,9 +17,14 @@ type lib struct {
 
 var (
 	// General
-	ptrAPI_RestartAppIfNecessary func(uint32) bool
-	ptrAPI_InitFlat              func(*steamErrMsg) ESteamAPIInitResult
-	ptrAPI_RunCallbacks          func()
+	ptrAPI_RestartAppIfNecessary           func(uint32) bool
+	ptrAPI_InitFlat                        func(*steamErrMsg) ESteamAPIInitResult
+	ptrAPI_RunCallbacks                    func()
+	ptrAPI_GetHSteamPipe                   func() HSteamPipe
+	ptrAPI_ManualDispatch_Init             func()
+	ptrAPI_ManualDispatch_RunFrame         func(HSteamPipe)
+	ptrAPI_ManualDispatch_GetNextCallback  func(HSteamPipe, *CallbackMsg) bool
+	ptrAPI_ManualDispatch_FreeLastCallback func(HSteamPipe)
 
 	// ISteamApps
 	ptrAPI_SteamApps                         func() uintptr
@@ -75,6 +80,11 @@ func registerFunctions(lib uintptr) {
 	purego.RegisterLibFunc(&ptrAPI_RestartAppIfNecessary, lib, flatAPI_RestartAppIfNecessary)
 	purego.RegisterLibFunc(&ptrAPI_InitFlat, lib, flatAPI_InitFlat)
 	purego.RegisterLibFunc(&ptrAPI_RunCallbacks, lib, flatAPI_RunCallbacks)
+	purego.RegisterLibFunc(&ptrAPI_GetHSteamPipe, lib, flatAPI_GetHSteamPipe)
+	purego.RegisterLibFunc(&ptrAPI_ManualDispatch_Init, lib, flatAPI_ManualDispatch_Init)
+	purego.RegisterLibFunc(&ptrAPI_ManualDispatch_RunFrame, lib, flatAPI_ManualDispatch_RunFrame)
+	purego.RegisterLibFunc(&ptrAPI_ManualDispatch_GetNextCallback, lib, flatAPI_ManualDispatch_GetNextCallback)
+	purego.RegisterLibFunc(&ptrAPI_ManualDispatch_FreeLastCallback, lib, flatAPI_ManualDispatch_FreeLastCallback)
 
 	// ISteamApps
 	purego.RegisterLibFunc(&ptrAPI_SteamApps, lib, flatAPI_SteamApps)
@@ -166,6 +176,46 @@ func RunCallbacks() {
 		return
 	}
 	ptrAPI_RunCallbacks()
+}
+
+func GetHSteamPipe() HSteamPipe {
+	if loadOnce() != nil {
+		return 0
+	}
+	return ptrAPI_GetHSteamPipe()
+}
+
+// ManualDispatch_Init informs the API that the application uses manual event
+// dispatch. It must be called after Init and before the other ManualDispatch
+// functions. Manual dispatch replaces RunCallbacks and must not be mixed with
+// the normal callback dispatch (RunCallbacks, or the C++ CCallback/CCallResult
+// mechanisms).
+func ManualDispatch_Init() {
+	if loadOnce() != nil {
+		return
+	}
+	ptrAPI_ManualDispatch_Init()
+}
+
+func ManualDispatch_RunFrame(pipe HSteamPipe) {
+	if loadOnce() != nil {
+		return
+	}
+	ptrAPI_ManualDispatch_RunFrame(pipe)
+}
+
+func ManualDispatch_GetNextCallback(pipe HSteamPipe, msg *CallbackMsg) bool {
+	if loadOnce() != nil {
+		return false
+	}
+	return ptrAPI_ManualDispatch_GetNextCallback(pipe, msg)
+}
+
+func ManualDispatch_FreeLastCallback(pipe HSteamPipe) {
+	if loadOnce() != nil {
+		return
+	}
+	ptrAPI_ManualDispatch_FreeLastCallback(pipe)
 }
 
 func SteamApps() ISteamApps {

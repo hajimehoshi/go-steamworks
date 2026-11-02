@@ -5,12 +5,17 @@
 
 package steamworks
 
-import "structs"
+import (
+	"structs"
+	"unsafe"
+)
 
 type AppId_t uint32
 type CSteamID uint64
 type HAuthTicket uint32
 type InputHandle_t uint64
+type HSteamPipe int32
+type HSteamUser int32
 
 const HAuthTicketInvalid HAuthTicket = 0
 
@@ -119,6 +124,21 @@ type GetTicketForWebApiResponse struct {
 	Ticket    [2560]byte
 }
 
+// GetTicketForWebApiResponseCallbackID is the k_iCallback of
+// GetTicketForWebApiResponse_t (k_iSteamUserCallbacks + 68, isteamuser.h).
+const GetTicketForWebApiResponseCallbackID = 168
+
+// CallbackMsg mirrors the native CallbackMsg_t returned by
+// ManualDispatch_GetNextCallback. Param points to the callback payload and is
+// only valid until ManualDispatch_FreeLastCallback is called.
+type CallbackMsg struct {
+	_          structs.HostLayout
+	SteamUser  HSteamUser
+	CallbackID int32
+	Param      unsafe.Pointer
+	ParamSize  int32
+}
+
 type ISteamUserStats interface {
 	GetAchievement(name string) (achieved, success bool)
 	SetAchievement(name string) bool
@@ -164,9 +184,14 @@ type ISteamFriends interface {
 }
 
 const (
-	flatAPI_RestartAppIfNecessary = "SteamAPI_RestartAppIfNecessary"
-	flatAPI_InitFlat              = "SteamAPI_InitFlat"
-	flatAPI_RunCallbacks          = "SteamAPI_RunCallbacks"
+	flatAPI_RestartAppIfNecessary           = "SteamAPI_RestartAppIfNecessary"
+	flatAPI_InitFlat                        = "SteamAPI_InitFlat"
+	flatAPI_RunCallbacks                    = "SteamAPI_RunCallbacks"
+	flatAPI_GetHSteamPipe                   = "SteamAPI_GetHSteamPipe"
+	flatAPI_ManualDispatch_Init             = "SteamAPI_ManualDispatch_Init"
+	flatAPI_ManualDispatch_RunFrame         = "SteamAPI_ManualDispatch_RunFrame"
+	flatAPI_ManualDispatch_GetNextCallback  = "SteamAPI_ManualDispatch_GetNextCallback"
+	flatAPI_ManualDispatch_FreeLastCallback = "SteamAPI_ManualDispatch_FreeLastCallback"
 
 	flatAPI_SteamApps                         = "SteamAPI_SteamApps_v009"
 	flatAPI_ISteamApps_BGetDLCDataByIndex     = "SteamAPI_ISteamApps_BGetDLCDataByIndex"
