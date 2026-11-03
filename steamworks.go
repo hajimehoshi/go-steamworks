@@ -5,9 +5,37 @@
 
 package steamworks
 
+import (
+	"structs"
+	"unsafe"
+)
+
 type AppId_t uint32
 type CSteamID uint64
+type HAuthTicket uint32
 type InputHandle_t uint64
+type HSteamPipe int32
+type HSteamUser int32
+
+const HAuthTicketInvalid HAuthTicket = 0
+
+type EResult int32
+
+const (
+	EResultNone                  EResult = 0
+	EResultOK                    EResult = 1
+	EResultFail                  EResult = 2
+	EResultNoConnection          EResult = 3
+	EResultInvalidPassword       EResult = 5
+	EResultInvalidProtocolVer    EResult = 7
+	EResultInvalidParam          EResult = 8
+	EResultBusy                  EResult = 10
+	EResultInvalidState          EResult = 11
+	EResultTimeout               EResult = 16
+	EResultNotLoggedOn           EResult = 21
+	EResultPending               EResult = 22
+	EResultInsufficientPrivilege EResult = 24
+)
 
 type ESteamAPIInitResult int32
 
@@ -84,6 +112,31 @@ type ISteamRemoteStorage interface {
 
 type ISteamUser interface {
 	GetSteamID() CSteamID
+	GetAuthTicketForWebApi(identity string) HAuthTicket
+	CancelAuthTicket(ticket HAuthTicket)
+}
+
+type GetTicketForWebApiResponse struct {
+	_         structs.HostLayout
+	Handle    HAuthTicket
+	Result    EResult
+	TicketLen int32
+	Ticket    [2560]byte
+}
+
+// GetTicketForWebApiResponseCallbackID is the k_iCallback of
+// GetTicketForWebApiResponse_t (k_iSteamUserCallbacks + 68, isteamuser.h).
+const GetTicketForWebApiResponseCallbackID = 168
+
+// CallbackMsg mirrors the native CallbackMsg_t returned by
+// ManualDispatch_GetNextCallback. Param points to the callback payload and is
+// only valid until ManualDispatch_FreeLastCallback is called.
+type CallbackMsg struct {
+	_          structs.HostLayout
+	SteamUser  HSteamUser
+	CallbackID int32
+	Param      unsafe.Pointer
+	ParamSize  int32
 }
 
 type ISteamUserStats interface {
@@ -131,9 +184,14 @@ type ISteamFriends interface {
 }
 
 const (
-	flatAPI_RestartAppIfNecessary = "SteamAPI_RestartAppIfNecessary"
-	flatAPI_InitFlat              = "SteamAPI_InitFlat"
-	flatAPI_RunCallbacks          = "SteamAPI_RunCallbacks"
+	flatAPI_RestartAppIfNecessary           = "SteamAPI_RestartAppIfNecessary"
+	flatAPI_InitFlat                        = "SteamAPI_InitFlat"
+	flatAPI_RunCallbacks                    = "SteamAPI_RunCallbacks"
+	flatAPI_GetHSteamPipe                   = "SteamAPI_GetHSteamPipe"
+	flatAPI_ManualDispatch_Init             = "SteamAPI_ManualDispatch_Init"
+	flatAPI_ManualDispatch_RunFrame         = "SteamAPI_ManualDispatch_RunFrame"
+	flatAPI_ManualDispatch_GetNextCallback  = "SteamAPI_ManualDispatch_GetNextCallback"
+	flatAPI_ManualDispatch_FreeLastCallback = "SteamAPI_ManualDispatch_FreeLastCallback"
 
 	flatAPI_SteamApps                         = "SteamAPI_SteamApps_v009"
 	flatAPI_ISteamApps_BGetDLCDataByIndex     = "SteamAPI_ISteamApps_BGetDLCDataByIndex"
@@ -158,8 +216,10 @@ const (
 	flatAPI_ISteamRemoteStorage_FileDelete  = "SteamAPI_ISteamRemoteStorage_FileDelete"
 	flatAPI_ISteamRemoteStorage_GetFileSize = "SteamAPI_ISteamRemoteStorage_GetFileSize"
 
-	flatAPI_SteamUser             = "SteamAPI_SteamUser_v023"
-	flatAPI_ISteamUser_GetSteamID = "SteamAPI_ISteamUser_GetSteamID"
+	flatAPI_SteamUser                         = "SteamAPI_SteamUser_v023"
+	flatAPI_ISteamUser_GetSteamID             = "SteamAPI_ISteamUser_GetSteamID"
+	flatAPI_ISteamUser_GetAuthTicketForWebApi = "SteamAPI_ISteamUser_GetAuthTicketForWebApi"
+	flatAPI_ISteamUser_CancelAuthTicket       = "SteamAPI_ISteamUser_CancelAuthTicket"
 
 	flatAPI_SteamUserStats                   = "SteamAPI_SteamUserStats_v013"
 	flatAPI_ISteamUserStats_GetAchievement   = "SteamAPI_ISteamUserStats_GetAchievement"
